@@ -1,0 +1,32 @@
+pipeline {
+    agent any
+    triggers {
+        githubPush() // This triggers build when push is received via webhook
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Olaitan07/devop_class.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Running build...'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying app...'
+            }
+        }
+    }
+}
