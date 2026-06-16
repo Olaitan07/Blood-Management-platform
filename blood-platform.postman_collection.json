@@ -9,7 +9,8 @@
     { "key": "baseUrl", "value": "http://localhost:8080", "description": "Modulith base URL" },
     { "key": "token", "value": "", "description": "JWT Bearer token — auto-set by any Login request." },
     { "key": "donorId", "value": "1", "description": "Donor ID — auto-set by Register Donor." },
-    { "key": "inventoryId", "value": "1", "description": "Inventory ID — auto-set by Add Stock." }
+    { "key": "inventoryId", "value": "1", "description": "Inventory ID — auto-set by Add Stock." },
+    { "key": "transferId", "value": "1", "description": "Transfer request ID — auto-set by Create Transfer Request." }
   ],
   "item": [
     {
@@ -324,6 +325,120 @@
               "query": [{ "key": "bloodGroup", "value": "O++" }]
             },
             "description": "Expects 400 with valid values listed."
+          }
+        }
+      ]
+    }
+  ,
+    {
+      "name": "Blood Transfers",
+      "description": "TransferController — /api/transfers\n\nFull transfer saga: PENDING → APPROVED → COMPLETED\n\nState machine:\n  PENDING → APPROVED | REJECTED | CANCELLED | INSUFFICIENT_STOCK\n  APPROVED → COMPLETED | CANCELLED | EXPIRED (48h auto-expire)\n\nWorkflow:\n1. Clinician searches blood (Blood Search folder)\n2. POST /api/transfers — creates request, reserves stock immediately\n3. Officer at source hospital: GET /api/transfers/pending → PUT /{id}/approve or /{id}/reject\n4. Officer at destination hospital: PUT /{id}/complete with unitsReceived\n5. Either party: PUT /{id}/cancel (APPROVED cancel releases reservation)\n\nAll requests require Authorization: Bearer {{token}}.\nSet {{transferId}} from the Create response.",
+      "item": [
+        {
+          "name": "Create Transfer Request",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.success && json.data && json.data.id) {", "  pm.collectionVariables.set('transferId', json.data.id);", "}"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceHospitalId\": 1,\n  \"bloodGroup\": \"O+\",\n  \"quantity\": 3,\n  \"idempotencyKey\": \"req-001-2026-06-16\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/transfers", "host": ["{{baseUrl}}"], "path": ["api", "transfers"] },
+            "description": "TRANS-1: Submit a blood transfer request.\n\nRoles: CLINICIAN, OFFICER, ADMIN\n\nErrors:\n- 400: quantity ≤ 0, invalid blood group\n- 400: sourceHospitalId == own hospital\n- 409: duplicate idempotencyKey (double-click protection)\n- 409: source hospital deactivated\n- 409: insufficient stock at source (live check, not search index)\n\nAuto-saves transferId → {{transferId}}"
+          }
+        },
+        {
+          "name": "Get My Requests",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/transfers/my-requests", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "my-requests"] },
+            "description": "Returns all transfer requests submitted by the authenticated user's hospital."
+          }
+        },
+        {
+          "name": "Get Pending Requests (Officer view)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/transfers/pending", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "pending"] },
+            "description": "OFFICER/ADMIN only. Returns PENDING requests targeting the authenticated user's hospital."
+          }
+        },
+        {
+          "name": "Approve Transfer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/approve", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "approve"] },
+            "description": "TRANS-2: Approve a PENDING request.\n\nRoles: OFFICER, ADMIN (must belong to source hospital)\n\nErrors:\n- 403: officer belongs to a different hospital\n- 409: request was cancelled before approval\n- 409: concurrent approval — exactly one succeeds (optimistic locking)"
+          }
+        },
+        {
+          "name": "Reject Transfer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"No compatible stock available at this time\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/reject", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "reject"] },
+            "description": "TRANS-3: Reject a PENDING request with a mandatory reason.\n\nRoles: OFFICER, ADMIN (must belong to source hospital)\n\nErrors:\n- 400: reason is missing\n- 409: request is already APPROVED (state machine enforced)"
+          }
+        },
+        {
+          "name": "Complete Transfer (full receipt)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unitsReceived\": 3\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/complete", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "complete"] },
+            "description": "TRANS-4: Confirm full receipt. Source deducts approved quantity; destination gains received units.\n\nRoles: OFFICER, CLINICIAN, ADMIN (must belong to requesting hospital)"
+          }
+        },
+        {
+          "name": "Complete Transfer (partial receipt / breakage)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unitsReceived\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/complete", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "complete"] },
+            "description": "TRANS-4 partial: fewer units arrived than approved (breakage/loss).\nSource deducts full approved amount; destination adds only received units. Discrepancy is audit-logged."
+          }
+        },
+        {
+          "name": "Complete Transfer (all expired in transit)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unitsReceived\": 0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/complete", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "complete"] },
+            "description": "TRANS-4 expired-in-transit: unitsReceived=0 means all blood expired during transit.\nReservation is released; nothing is added to destination."
+          }
+        },
+        {
+          "name": "Cancel Transfer (PENDING)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/cancel", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "cancel"] },
+            "description": "TRANS-5: Cancel a PENDING or APPROVED request.\n\nPENDING → reservation released.\nAPPROVED → reservation released (compensating action).\nCOMPLETED → 409 (cannot cancel).\n\nRoles: CLINICIAN/OFFICER at requesting hospital, or officer at source hospital."
           }
         }
       ]
