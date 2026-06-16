@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: blood-postgres
+    environment:
+      POSTGRES_DB: blooddb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d blooddb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - blood-network
+
+  app:
+    build: .
+    container_name: blood-app
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/blooddb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      JWT_EXPIRATION_MS: 86400000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - blood-network
+
+volumes:
+  postgres_data:
+
+networks:
+  blood-network:
+    driver: bridge
