@@ -1,4 +1,4 @@
 @org.springframework.modulith.ApplicationModule(
-        allowedDependencies = "donor :: events"
+        allowedDependencies = {"donor :: events", "transfer :: events"}
 )
 package com.blood.notification;
