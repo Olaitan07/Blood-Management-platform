@@ -28,4 +28,14 @@ public class Notification {
 
     @Column(name = "sent_at", nullable = false)
     private LocalDateTime sentAt;
+
+    @Column(name = "transfer_id")
+    private Long transferId;
+
+    @Column(name = "hospital_id")
+    private Long hospitalId;
+
+    @Column(name = "type", nullable = false, length = 50)
+    @Builder.Default
+    private String type = "DONOR";
 }
