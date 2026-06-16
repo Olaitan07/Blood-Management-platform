@@ -32,6 +32,10 @@ public interface BloodInventoryRepository extends JpaRepository<BloodInventory, 
 
     List<BloodInventory> findByHospitalId(Long hospitalId);
 
+    /** Used by inventory::reporting to calculate expiry waste in a date range. */
+    @Query("SELECT i FROM BloodInventory i WHERE i.expiryDate BETWEEN :from AND :to AND i.unitsAvailable > 0")
+    List<BloodInventory> findWastedInRange(@Param("from") LocalDate from, @Param("to") LocalDate to);
+
     // Cross-hospital search — used by the inventory::search named interface
     @Query("SELECT i FROM BloodInventory i " +
            "WHERE i.hospitalId IN :hospitalIds " +

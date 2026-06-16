@@ -27,4 +27,7 @@ public interface BloodTransferRepository extends JpaRepository<BloodTransferRequ
     Optional<BloodTransferRequest> findByIdAndRequestingHospitalId(Long id, Long hospitalId);
 
     Optional<BloodTransferRequest> findByIdAndSourceHospitalId(Long id, Long hospitalId);
+
+    /** Used by transfer::reporting to aggregate stats over a date range. */
+    List<BloodTransferRequest> findByRequestDateBetween(LocalDateTime from, LocalDateTime to);
 }
