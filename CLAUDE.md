@@ -35,12 +35,13 @@ This is a **modular monolith** using Spring Modulith 1.2.4. All code lives in on
 | `inventory` | `com.blood.inventory` | Blood stock management per hospital, audit log |
 | `notification` | `com.blood.notification` | Event-driven notifications |
 | `search` | `com.blood.search` | Cross-hospital blood availability search |
+| `transfer` | `com.blood.transfer` | Blood transfer workflow saga (request → approve → complete) |
 
 ### Module Boundaries (enforced by Spring Modulith)
 
 Modules may only depend on each other through two mechanisms:
 
-1. **Named interfaces** — `hospital` exposes a `service` named interface; `auth` and `inventory` depend on it. `inventory` exposes a `search` named interface; `search` depends on it to query cross-hospital availability.
+1. **Named interfaces** — `hospital::service` (used by `auth`, `inventory`, `transfer`), `inventory::search` (used by `search`), `inventory::transfer` (used by `transfer`), `transfer::events` (used by `notification`).
 2. **Events** — `donor` exposes an `events` named interface; `notification` listens to `DonorRegisteredEvent` via `@ApplicationModuleListener`.
 
 Direct cross-package imports outside these interfaces will break the `moduleStructureIsValid` test. Each module's allowed dependencies are declared in its `package-info.java`.
