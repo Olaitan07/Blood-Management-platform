@@ -272,6 +272,61 @@
           }
         }
       ]
+    },
+    {
+      "name": "Blood Search",
+      "description": "BloodSearchController — GET /api/search/blood\n\nSearch for a blood group across all active hospitals.\nResults are sorted by proximity to the requesting user's hospital (same city first, then same state, then others), sub-sorted by available units descending.\nReserved units are excluded from the available count.\nDeactivated hospitals are excluded.\nWhen no results are found, compatible donor groups are suggested.",
+      "item": [
+        {
+          "name": "Search Blood — O+",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/blood?bloodGroup=O%2B&page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "blood"],
+              "query": [
+                { "key": "bloodGroup", "value": "O+" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            },
+            "description": "Search all active hospitals for available O+ units.\n\nResponse data fields:\n- bloodGroup: the searched group\n- totalResults: total matching records\n- totalPages / page / size: pagination info\n- results[].availableUnits: unitsAvailable − unitsReserved\n- results[].lastUpdated: ISO timestamp — use to judge freshness\n- suggestions: non-null when results is empty — compatible donor groups to try next"
+          }
+        },
+        {
+          "name": "Search Blood — AB+ (universal recipient)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/blood?bloodGroup=AB%2B&page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "blood"],
+              "query": [
+                { "key": "bloodGroup", "value": "AB+" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Blood — invalid group (400)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/blood?bloodGroup=O%2B%2B",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "blood"],
+              "query": [{ "key": "bloodGroup", "value": "O++" }]
+            },
+            "description": "Expects 400 with valid values listed."
+          }
+        }
+      ]
     }
   ]
 }
