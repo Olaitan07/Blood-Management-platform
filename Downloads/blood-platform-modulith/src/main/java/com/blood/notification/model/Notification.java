@@ -20,6 +20,9 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "donor_id")
+    private Long donorId;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
 
