@@ -2,6 +2,7 @@ package com.blood.notification.listener;
 
 import com.blood.donor.event.DonorRegisteredEvent;
 import com.blood.notification.model.Notification;
+import com.blood.notification.model.NotificationStatus;
 import com.blood.notification.model.ProcessedEvent;
 import com.blood.notification.repository.NotificationRepository;
 import com.blood.notification.repository.ProcessedEventRepository;
@@ -22,16 +23,17 @@ public class DonorRegisteredListener {
     private final ProcessedEventRepository processedEventRepository;
 
     /**
-     * Idempotency: keyed on donorId so re-delivery (at-least-once) sends only ONE welcome SMS.
-     * Spring Modulith's @ApplicationModuleListener runs in a transaction, so the processed_events
-     * insert and the notification insert are atomic.
+     * Idempotency: keyed on donorId — re-delivery (at-least-once) stores only ONE notification.
+     * Spring Modulith's event_publication outbox ensures this listener is called even after restart,
+     * so no donor welcome message is ever lost.
+     * Privacy boundary: only data present in the event is used — phone/address excluded intentionally.
      */
     @ApplicationModuleListener
     public void onDonorRegistered(DonorRegisteredEvent event) {
         String eventKey = "donor-registered:" + event.donorId();
 
         if (processedEventRepository.existsById(eventKey)) {
-            log.warn("Duplicate event skipped: {}", eventKey);
+            log.warn("Duplicate donor-registered event skipped: donorId={}", event.donorId());
             return;
         }
 
@@ -39,19 +41,20 @@ public class DonorRegisteredListener {
                 "Welcome %s! Your donor registration is confirmed. Blood group: %s",
                 event.fullName(), event.bloodGroup());
 
-        Notification notification = Notification.builder()
+        notificationRepository.save(Notification.builder()
                 .donorId(event.donorId())
+                .recipient("donor:" + event.donorId())
                 .message(message)
                 .sentAt(LocalDateTime.now())
-                .build();
-
-        notificationRepository.save(notification);
+                .type("DONOR")
+                .status(NotificationStatus.PENDING)
+                .build());
 
         processedEventRepository.save(ProcessedEvent.builder()
                 .eventKey(eventKey)
                 .processedAt(Instant.now())
                 .build());
 
-        log.info("Welcome SMS queued for donorId={}", event.donorId());
+        log.info("Notification saved (PENDING) for donorId={}", event.donorId());
     }
 }
