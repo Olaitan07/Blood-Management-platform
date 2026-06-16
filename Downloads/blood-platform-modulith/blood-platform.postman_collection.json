@@ -2,517 +2,273 @@
   "info": {
     "name": "Blood Platform API",
     "_postman_id": "blood-platform-collection",
-    "description": "Blood Bank Management Platform \u2014 import this file into Postman.\n\nAll responses follow the generic ApiResponse wrapper:\n{\n  \"success\": true|false,\n  \"message\": \"...\",\n  \"data\": { ... },      // omitted on error\n  \"errors\": { ... },    // omitted on success\n  \"timestamp\": \"...\"\n}\n\n--- HOW TO TEST ---\n1. Run Login (Admin) first \u2014 token is auto-saved to {{token}}\n2. Auth endpoints: use {{authUrl}} (port 8081)\n3. Hospital endpoints: use {{hospitalUrl}} (port 8083)\n\nDefault seed admin: admin@blood.com / Admin1!",
+    "description": "Blood Bank Management Platform — modulith running on port 8080.\n\nAll responses follow:\n{\n  \"success\": true|false,\n  \"message\": \"...\",\n  \"data\": { ... },\n  \"errors\": { ... },\n  \"timestamp\": \"...\"\n}\n\nDefault seed admin: admin@blood.com / Admin1!\nRun 'Login (Admin)' first — token auto-saves to {{token}}.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {
-      "key": "authUrl",
-      "value": "http://localhost:8081",
-      "description": "Auth-service direct URL (port 8081)."
-    },
-    {
-      "key": "hospitalUrl",
-      "value": "http://localhost:8083",
-      "description": "Hospital-service direct URL (port 8083)."
-    },
-    {
-      "key": "token",
-      "value": "",
-      "description": "JWT Bearer token \u2014 auto-set by any Login request."
-    }
+    { "key": "baseUrl", "value": "http://localhost:8080", "description": "Modulith base URL" },
+    { "key": "token", "value": "", "description": "JWT Bearer token — auto-set by any Login request." },
+    { "key": "donorId", "value": "1", "description": "Donor ID — auto-set by Register Donor." },
+    { "key": "inventoryId", "value": "1", "description": "Inventory ID — auto-set by Add Stock." }
   ],
   "item": [
     {
       "name": "Auth",
-      "description": "AuthController \u2014 /api/auth\n\nPublic endpoints: /register and /login\nProtected endpoint: /me (requires Bearer token)",
       "item": [
         {
-          "name": "Register \u2014 DONOR",
+          "name": "Register — DONOR",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@blood.com\",\n  \"password\": \"Password1!\",\n  \"role\": \"DONOR\",\n  \"hospitalId\": null\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{authUrl}}/api/auth/register",
-              "host": [
-                "{{authUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "register"
-              ]
-            },
-            "description": "Register a new DONOR. hospitalId is not required for DONOR or ADMIN roles.\n\nPassword rules: minimum 8 characters, at least one number.\n\nAll new users start with status PENDING_APPROVAL \u2014 they cannot login until an admin approves them.\n\nSuccess (201):\n{\n  \"success\": true,\n  \"message\": \"Registration successful. Awaiting admin approval.\",\n  \"data\": {\n    \"userId\": 25,\n    \"name\": \"John Doe\",\n    \"email\": \"john@blood.com\",\n    \"role\": \"DONOR\",\n    \"accountStatus\": \"PENDING_APPROVAL\"\n  },\n  \"timestamp\": \"...\"\n}\n\nError (400 \u2014 weak password):\n{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": { \"password\": \"Password must be at least 8 characters and contain at least one number\" },\n  \"timestamp\": \"...\"\n}\n\nError (409 \u2014 duplicate email):\n{\n  \"success\": false,\n  \"message\": \"Email already registered: john@blood.com\",\n  \"timestamp\": \"...\"\n}"
-          }
-        },
-        {
-          "name": "Register \u2014 CLINICIAN / OFFICER",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Dr. Jane Smith\",\n  \"email\": \"jane@blood.com\",\n  \"password\": \"Password1!\",\n  \"role\": \"CLINICIAN\",\n  \"hospitalId\": 1\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{authUrl}}/api/auth/register",
-              "host": [
-                "{{authUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "register"
-              ]
-            },
-            "description": "Register a CLINICIAN or OFFICER. hospitalId is REQUIRED for these roles \u2014 the system validates that the hospital exists.\n\nChange role to OFFICER for a blood bank officer.\n\nError (400 \u2014 missing hospitalId):\n{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": { \"hospitalId\": \"hospitalId is required for role CLINICIAN\" },\n  \"timestamp\": \"...\"\n}\n\nError (400 \u2014 unknown hospital):\n{\n  \"success\": false,\n  \"message\": \"Hospital not found with id: 999\",\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@blood.com\",\n  \"password\": \"Password1!\",\n  \"role\": \"DONOR\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] },
+            "description": "Register a new DONOR. New users start with PENDING_APPROVAL — an admin must approve before login."
           }
         },
         {
           "name": "Login (Admin)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "var json = pm.response.json();",
-                  "if (json.success && json.data && json.data.token) {",
-                  "  pm.collectionVariables.set('token', json.data.token);",
-                  "  console.log('Admin token saved:', json.data.token.substring(0, 20) + '...');",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.success && json.data && json.data.token) {", "  pm.collectionVariables.set('token', json.data.token);", "}"], "type": "text/javascript" } }],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@blood.com\",\n  \"password\": \"Admin1!\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{authUrl}}/api/auth/login",
-              "host": [
-                "{{authUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Login as the default seed admin. Token is auto-saved to {{token}}.\n\nRun this first before using any Admin \u2014 User Management endpoints.\n\nSeed credentials:\n  Email   : admin@blood.com\n  Password: Admin1!\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"Login successful.\",\n  \"data\": {\n    \"token\": \"eyJ...\",\n    \"type\": \"Bearer\",\n    \"userId\": 17,\n    \"name\": \"System Admin\",\n    \"email\": \"admin@blood.com\",\n    \"role\": \"ADMIN\",\n    \"accountStatus\": \"ACTIVE\"\n  },\n  \"timestamp\": \"...\"\n}\n\nError (401 \u2014 wrong credentials):\n{\n  \"success\": false,\n  \"message\": \"Invalid email or password\",\n  \"timestamp\": \"...\"\n}\n\nError (403 \u2014 account not active):\n{\n  \"success\": false,\n  \"message\": \"Account pending approval. Please wait for an administrator to approve your account.\",\n  \"timestamp\": \"...\"\n}\n\nError (403 \u2014 account locked after 5 failed attempts):\n{\n  \"success\": false,\n  \"message\": \"Account is temporarily locked. Try again later.\",\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@blood.com\",\n  \"password\": \"Admin1!\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+            "description": "Login as seed admin. Token auto-saved to {{token}}."
           }
         },
         {
           "name": "Login (User)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "var json = pm.response.json();",
-                  "if (json.success && json.data && json.data.token) {",
-                  "  pm.collectionVariables.set('token', json.data.token);",
-                  "  console.log('User token saved:', json.data.token.substring(0, 20) + '...');",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.success && json.data && json.data.token) {", "  pm.collectionVariables.set('token', json.data.token);", "}"], "type": "text/javascript" } }],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"john@blood.com\",\n  \"password\": \"Password1!\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{authUrl}}/api/auth/login",
-              "host": [
-                "{{authUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Login as a non-admin user (DONOR, CLINICIAN, OFFICER). Token is auto-saved to {{token}}.\n\nThe account must be ACTIVE (approved by admin) before login works.\nReplace the email/password with the credentials of the user you registered.\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"Login successful.\",\n  \"data\": {\n    \"token\": \"eyJ...\",\n    \"type\": \"Bearer\",\n    \"userId\": 25,\n    \"name\": \"John Doe\",\n    \"email\": \"john@blood.com\",\n    \"role\": \"DONOR\",\n    \"accountStatus\": \"ACTIVE\"\n  },\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"john@blood.com\",\n  \"password\": \"Password1!\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+            "description": "Login as a non-admin user. Account must be ACTIVE (approved by admin)."
           }
         },
         {
           "name": "Get Current User",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{authUrl}}/api/auth/me",
-              "host": [
-                "{{authUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "me"
-              ]
-            },
-            "description": "Returns the profile of whoever is currently logged in (based on {{token}}).\n\nUse this to verify your token is working and to see your own user details.\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"User profile retrieved.\",\n  \"data\": {\n    \"id\": 25,\n    \"name\": \"John Doe\",\n    \"email\": \"john@blood.com\",\n    \"role\": \"DONOR\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"...\"\n  },\n  \"timestamp\": \"...\"\n}\n\nError (401 \u2014 no token or expired):\n{\n  \"success\": false,\n  \"message\": \"Token expired\",\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
           }
         }
       ]
     },
     {
-      "name": "Admin \u2014 User Management",
-      "description": "AdminController \u2014 /api/admin/users\n\nALL endpoints in this folder require an ADMIN token.\nRun 'Login (Admin)' first to set {{token}}.\n\nTypical workflow:\n1. Login (Admin)\n2. Get Pending Users \u2014 note the user id\n3. Approve User \u2014 paste the id into the URL\n4. Optionally deactivate or change role",
+      "name": "Admin — User Management",
       "item": [
         {
           "name": "Get All Users",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{authUrl}}/api/admin/users",
-              "host": [
-                "{{authUrl}}"
-              ],
-              "path": [
-                "api",
-                "admin",
-                "users"
-              ]
-            },
-            "description": "List every user on the platform across all roles and statuses. ADMIN only.\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"All users retrieved.\",\n  \"data\": [\n    {\n      \"id\": 17,\n      \"name\": \"System Admin\",\n      \"email\": \"admin@blood.com\",\n      \"role\": \"ADMIN\",\n      \"status\": \"ACTIVE\",\n      \"createdAt\": \"...\"\n    },\n    {\n      \"id\": 25,\n      \"name\": \"John Doe\",\n      \"email\": \"john@blood.com\",\n      \"role\": \"DONOR\",\n      \"status\": \"PENDING_APPROVAL\",\n      \"createdAt\": \"...\"\n    }\n  ],\n  \"timestamp\": \"...\"\n}\n\nError (403 \u2014 not an admin):\n{\n  \"success\": false,\n  \"message\": \"Access Denied\",\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/users", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users"] }
           }
         },
         {
           "name": "Get Pending Users",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{authUrl}}/api/admin/users/pending",
-              "host": [
-                "{{authUrl}}"
-              ],
-              "path": [
-                "api",
-                "admin",
-                "users",
-                "pending"
-              ]
-            },
-            "description": "List only users with status PENDING_APPROVAL. ADMIN only.\n\nUse this to find which users are waiting to be approved. Copy the id from the response and use it in 'Approve User'.\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"Pending users retrieved.\",\n  \"data\": [\n    {\n      \"id\": 25,\n      \"name\": \"John Doe\",\n      \"email\": \"john@blood.com\",\n      \"role\": \"DONOR\",\n      \"status\": \"PENDING_APPROVAL\",\n      \"createdAt\": \"...\"\n    }\n  ],\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/users/pending", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users", "pending"] }
           }
         },
         {
           "name": "Approve User",
           "request": {
             "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{authUrl}}/api/admin/users/25/approve",
-              "host": [
-                "{{authUrl}}"
-              ],
-              "path": [
-                "api",
-                "admin",
-                "users",
-                "25",
-                "approve"
-              ]
-            },
-            "description": "Approve a PENDING_APPROVAL user \u2014 sets their status to ACTIVE so they can login.\n\nReplace '25' in the URL with the actual user id from 'Get Pending Users'.\n\nPublishes a Kafka audit event: user-approved.\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"User approved successfully.\",\n  \"data\": {\n    \"id\": 25,\n    \"name\": \"John Doe\",\n    \"email\": \"john@blood.com\",\n    \"role\": \"DONOR\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"...\"\n  },\n  \"timestamp\": \"...\"\n}\n\nError (404 \u2014 user not found):\n{\n  \"success\": false,\n  \"message\": \"User not found\",\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/users/25/approve", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users", "25", "approve"] }
           }
         },
         {
           "name": "Deactivate User",
           "request": {
             "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{authUrl}}/api/admin/users/25/deactivate",
-              "host": [
-                "{{authUrl}}"
-              ],
-              "path": [
-                "api",
-                "admin",
-                "users",
-                "25",
-                "deactivate"
-              ]
-            },
-            "description": "Suspend a user \u2014 sets their status to SUSPENDED.\n\nReplace '25' in the URL with the actual user id.\n\nThe user's existing session is invalidated immediately on their next request (no need to wait for token expiry).\n\nCannot suspend the last active ADMIN \u2014 returns 409.\n\nPublishes a Kafka audit event: user-deactivated.\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"User deactivated successfully.\",\n  \"data\": {\n    \"id\": 25,\n    \"name\": \"John Doe\",\n    \"email\": \"john@blood.com\",\n    \"role\": \"DONOR\",\n    \"status\": \"SUSPENDED\",\n    \"createdAt\": \"...\"\n  },\n  \"timestamp\": \"...\"\n}\n\nError (409 \u2014 last active admin):\n{\n  \"success\": false,\n  \"message\": \"At least one active administrator required\",\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/users/25/deactivate", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users", "25", "deactivate"] }
           }
         },
         {
           "name": "Change User Role",
           "request": {
             "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{authUrl}}/api/admin/users/25/role?newRole=OFFICER",
-              "host": [
-                "{{authUrl}}"
-              ],
-              "path": [
-                "api",
-                "admin",
-                "users",
-                "25",
-                "role"
-              ],
-              "query": [
-                {
-                  "key": "newRole",
-                  "value": "OFFICER",
-                  "description": "Valid values: DONOR | CLINICIAN | OFFICER | ADMIN"
-                }
-              ]
-            },
-            "description": "Change a user's role. Replace '25' with the actual user id and set newRole to the desired role.\n\nValid roles: DONOR, CLINICIAN, OFFICER, ADMIN\n\nCannot demote the last active ADMIN \u2014 returns 409.\n\nPublishes a Kafka audit event: role-changed.\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"User role updated successfully.\",\n  \"data\": {\n    \"id\": 25,\n    \"name\": \"John Doe\",\n    \"email\": \"john@blood.com\",\n    \"role\": \"OFFICER\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"...\"\n  },\n  \"timestamp\": \"...\"\n}\n\nError (409 \u2014 last active admin):\n{\n  \"success\": false,\n  \"message\": \"At least one active administrator required\",\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/users/25/role?newRole=DONOR", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users", "25", "role"], "query": [{ "key": "newRole", "value": "DONOR" }] }
           }
         }
       ]
     },
     {
       "name": "Hospitals",
-      "description": "HospitalController \u2014 /api/hospitals (port 8083)\n\nGET endpoints: any authenticated user\nPOST / PUT / DELETE: ADMIN role required\n\nRun Login (Admin) first to set {{token}}.\n\nWorkflow:\n1. Login (Admin)\n2. Register Hospital\n3. Get Hospitals to see the list\n4. Deactivate Hospital when needed",
       "item": [
         {
           "name": "Register Hospital",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Lagos General Hospital\",\n  \"address\": \"1 Marina Road\",\n  \"state\": \"Lagos\",\n  \"city\": \"Lagos\",\n  \"contact\": \"+2341234567\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{hospitalUrl}}/api/hospitals",
-              "host": [
-                "{{hospitalUrl}}"
-              ],
-              "path": [
-                "api",
-                "hospitals"
-              ]
-            },
-            "description": "Register a new hospital. ADMIN only.\n\nAll five fields are required. Duplicate name+city combination is rejected with 409.\n\nSuccess (201):\n{\n  \"success\": true,\n  \"message\": \"Hospital registered successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Lagos General Hospital\",\n    \"address\": \"1 Marina Road\",\n    \"state\": \"Lagos\",\n    \"city\": \"Lagos\",\n    \"contact\": \"+2341234567\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"...\"\n  },\n  \"timestamp\": \"...\"\n}\n\nError (400 \u2014 missing fields):\n{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": {\n    \"name\": \"Hospital name is required\",\n    \"city\": \"City is required\"\n  },\n  \"timestamp\": \"...\"\n}\n\nError (409 \u2014 duplicate name+city):\n{\n  \"success\": false,\n  \"message\": \"A hospital named 'Lagos General Hospital' already exists in Lagos\",\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Lagos General Hospital\",\n  \"address\": \"1 Marina Road\",\n  \"state\": \"Lagos\",\n  \"city\": \"Lagos Island\",\n  \"contact\": \"08012345678\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/api/hospitals", "host": ["{{baseUrl}}"], "path": ["api", "hospitals"] },
+            "description": "ADMIN only. Duplicate name+city rejected with 409."
           }
         },
         {
-          "name": "Get Active Hospitals",
+          "name": "Get All Hospitals",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hospitalUrl}}/api/hospitals",
-              "host": [
-                "{{hospitalUrl}}"
-              ],
-              "path": [
-                "api",
-                "hospitals"
-              ]
-            },
-            "description": "List all ACTIVE hospitals. Any authenticated user.\n\nInactive hospitals are excluded \u2014 use Get All Hospitals to see them.\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"Active hospitals retrieved\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Lagos General Hospital\",\n      \"status\": \"ACTIVE\",\n      ...\n    }\n  ],\n  \"timestamp\": \"...\"\n}"
-          }
-        },
-        {
-          "name": "Get All Hospitals (incl. Inactive)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hospitalUrl}}/api/hospitals/all",
-              "host": [
-                "{{hospitalUrl}}"
-              ],
-              "path": [
-                "api",
-                "hospitals",
-                "all"
-              ]
-            },
-            "description": "List ALL hospitals including INACTIVE ones. ADMIN only.\n\nUse this to see deactivated hospitals and their historical data.\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"All hospitals retrieved\",\n  \"data\": [\n    { \"id\": 1, \"status\": \"ACTIVE\", ... },\n    { \"id\": 2, \"status\": \"INACTIVE\", ... }\n  ],\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/hospitals", "host": ["{{baseUrl}}"], "path": ["api", "hospitals"] }
           }
         },
         {
           "name": "Get Hospital by ID",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hospitalUrl}}/api/hospitals/1",
-              "host": [
-                "{{hospitalUrl}}"
-              ],
-              "path": [
-                "api",
-                "hospitals",
-                "1"
-              ]
-            },
-            "description": "Get a single hospital by id. Any authenticated user. Replace 1 with the actual hospital id.\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"Hospital retrieved\",\n  \"data\": { \"id\": 1, \"name\": \"Lagos General Hospital\", ... },\n  \"timestamp\": \"...\"\n}\n\nError (404):\n{\n  \"success\": false,\n  \"message\": \"Hospital not found with id: 1\",\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/hospitals/1", "host": ["{{baseUrl}}"], "path": ["api", "hospitals", "1"] }
           }
         },
         {
           "name": "Deactivate Hospital",
           "request": {
             "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hospitalUrl}}/api/hospitals/1/deactivate",
-              "host": [
-                "{{hospitalUrl}}"
-              ],
-              "path": [
-                "api",
-                "hospitals",
-                "1",
-                "deactivate"
-              ]
-            },
-            "description": "Deactivate a hospital (soft delete) \u2014 sets status to INACTIVE. ADMIN only.\n\nReplace 1 with the actual hospital id.\n\nDeactivated hospitals no longer appear in the active list or transfer dropdowns. Historical records are preserved.\n\nPublishes a Kafka event: hospital-deactivated.\n\nSuccess (200):\n{\n  \"success\": true,\n  \"message\": \"Hospital deactivated successfully\",\n  \"data\": { \"id\": 1, \"status\": \"INACTIVE\", ... },\n  \"timestamp\": \"...\"\n}\n\nError (404):\n{\n  \"success\": false,\n  \"message\": \"Hospital not found with id: 1\",\n  \"timestamp\": \"...\"\n}"
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/hospitals/1/deactivate", "host": ["{{baseUrl}}"], "path": ["api", "hospitals", "1", "deactivate"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Donors",
+      "item": [
+        {
+          "name": "Register Donor",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.success && json.data && json.data.id) {", "  pm.collectionVariables.set('donorId', json.data.id);", "}"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"John Doe\",\n  \"bloodGroup\": \"O+\",\n  \"phone\": \"08012345678\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/api/donors", "host": ["{{baseUrl}}"], "path": ["api", "donors"] },
+            "description": "Register donor profile for the logged-in user. donorId auto-saved to {{donorId}}.\nValid bloodGroup: A+, A-, B+, B-, AB+, AB-, O+, O-"
           }
         },
         {
-          "name": "Delete Hospital (blocked)",
+          "name": "Get My Donor Profile",
           "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hospitalUrl}}/api/hospitals/1",
-              "host": [
-                "{{hospitalUrl}}"
-              ],
-              "path": [
-                "api",
-                "hospitals",
-                "1"
-              ]
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/donors/me", "host": ["{{baseUrl}}"], "path": ["api", "donors", "me"] }
+          }
+        },
+        {
+          "name": "List All Donors",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/donors", "host": ["{{baseUrl}}"], "path": ["api", "donors"] }
+          }
+        },
+        {
+          "name": "Record Donation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"donationDate\": \"2026-06-16\",\n  \"hospitalName\": \"Lagos General Hospital\",\n  \"units\": 1\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/api/donors/{{donorId}}/donations", "host": ["{{baseUrl}}"], "path": ["api", "donors", "{{donorId}}", "donations"] },
+            "description": "IDOR protected — only the donor can record their own donation. Updates eligibility to NOT_ELIGIBLE for 3 months."
+          }
+        },
+        {
+          "name": "Get Donation History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/donors/{{donorId}}/donations?page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api", "donors", "{{donorId}}", "donations"], "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }] },
+            "description": "Paginated donation history, newest first. IDOR protected."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "description": "InventoryController — /api/inventory\n\nWorkflow:\n1. Login as OFFICER/CLINICIAN/ADMIN (user must be linked to a hospital via hospitalId in JWT)\n2. Add Stock — inventoryId auto-saved to {{inventoryId}}\n3. Get Inventory — lists non-expired stock for your hospital\n4. Update Stock (correction) — PUT /{id}\n5. Get Audit Log — GET /{id}/audit",
+      "item": [
+        {
+          "name": "Add Stock",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.success && json.data && json.data.id) {", "  pm.collectionVariables.set('inventoryId', json.data.id);", "}"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bloodGroup\": \"O+\",\n  \"units\": 10,\n  \"expiryDate\": \"2026-07-28\",\n  \"confirmShelfLife\": false\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "description": "Hard DELETE is always blocked \u2014 returns 409. Use Deactivate Hospital instead.\n\nThis protects referential integrity with linked users, inventory, and transfer records.\n\nResponse (409):\n{\n  \"success\": false,\n  \"message\": \"Deactivate the hospital instead of deleting it. Hard deletion is blocked to preserve referential integrity with linked users and inventory.\",\n  \"timestamp\": \"...\"\n}"
+            "url": { "raw": "{{baseUrl}}/api/inventory", "host": ["{{baseUrl}}"], "path": ["api", "inventory"] },
+            "description": "Add blood stock for the authenticated user's hospital (scoped via JWT hospitalId).\n\nValid bloodGroup: A+, A-, B+, B-, AB+, AB-, O+, O-\n\nErrors:\n- 400: expiryDate is today or in the past\n- 422: shelf life > 42 days and confirmShelfLife=false (resubmit with confirmShelfLife=true)\n- 400: units <= 0\n\nSets inventoryId → {{inventoryId}}"
+          }
+        },
+        {
+          "name": "Add Stock (long shelf life — confirmed)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bloodGroup\": \"A-\",\n  \"units\": 5,\n  \"expiryDate\": \"2026-12-31\",\n  \"confirmShelfLife\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/inventory", "host": ["{{baseUrl}}"], "path": ["api", "inventory"] },
+            "description": "Resubmit with confirmShelfLife=true when expiry is more than 42 days away (e.g. frozen plasma)."
+          }
+        },
+        {
+          "name": "Get Hospital Inventory",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/inventory", "host": ["{{baseUrl}}"], "path": ["api", "inventory"] },
+            "description": "Returns all non-expired inventory for the authenticated user's hospital. Expired records are filtered at query time."
+          }
+        },
+        {
+          "name": "Update Stock (correction)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"units\": 8,\n  \"reason\": \"Corrected after physical count — 2 units discarded (damaged bag)\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/inventory/{{inventoryId}}", "host": ["{{baseUrl}}"], "path": ["api", "inventory", "{{inventoryId}}"] },
+            "description": "Set absolute unit count with mandatory reason. Triggers audit log entry.\n\nErrors:\n- 400: units < 0\n- 400: units < reservedUnits\n- 404: inventory not found or belongs to another hospital\n- 409: concurrent update conflict (retry)"
+          }
+        },
+        {
+          "name": "Get Audit Log",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/inventory/{{inventoryId}}/audit", "host": ["{{baseUrl}}"], "path": ["api", "inventory", "{{inventoryId}}", "audit"] },
+            "description": "Full audit trail for an inventory record — who changed what, when, and why. Ordered newest first."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/notifications", "host": ["{{baseUrl}}"], "path": ["api", "notifications"] },
+            "description": "List all notifications. Created automatically when a donor registers."
           }
         }
       ]
