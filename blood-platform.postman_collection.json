@@ -2,49 +2,164 @@
   "info": {
     "name": "Blood Platform API",
     "_postman_id": "blood-platform-collection",
-    "description": "Blood Bank Management Platform — modulith running on port 8080.\n\nAll responses follow:\n{\n  \"success\": true|false,\n  \"message\": \"...\",\n  \"data\": { ... },\n  \"errors\": { ... },\n  \"timestamp\": \"...\"\n}\n\nDefault seed admin: admin@blood.com / Admin1!\nRun 'Login (Admin)' first — token auto-saves to {{token}}.",
+    "description": "Blood Bank Management Platform \u2014 modulith running on port 8080.\n\nAll responses follow:\n{\n  \"success\": true|false,\n  \"message\": \"...\",\n  \"data\": { ... },\n  \"errors\": { ... },\n  \"timestamp\": \"...\"\n}\n\nDefault seed admin: admin@blood.com / Admin1!\nRun 'Login (Admin)' first \u2014 token auto-saves to {{token}}.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8080", "description": "Modulith base URL" },
-    { "key": "token", "value": "", "description": "JWT Bearer token — auto-set by any Login request." },
-    { "key": "donorId", "value": "1", "description": "Donor ID — auto-set by Register Donor." },
-    { "key": "inventoryId", "value": "1", "description": "Inventory ID — auto-set by Add Stock." },
-    { "key": "transferId", "value": "1", "description": "Transfer request ID — auto-set by Create Transfer Request." }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "description": "Modulith base URL"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "description": "JWT Bearer token \u2014 auto-set by any Login request."
+    },
+    {
+      "key": "donorId",
+      "value": "1",
+      "description": "Donor ID \u2014 auto-set by Register Donor."
+    },
+    {
+      "key": "inventoryId",
+      "value": "1",
+      "description": "Inventory ID \u2014 auto-set by Add Stock."
+    },
+    {
+      "key": "transferId",
+      "value": "1",
+      "description": "Transfer request ID \u2014 auto-set by Create Transfer Request."
+    }
   ],
   "item": [
     {
       "name": "Auth",
       "item": [
         {
-          "name": "Register — DONOR",
+          "name": "Register \u2014 DONOR",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@blood.com\",\n  \"password\": \"Password1!\",\n  \"role\": \"DONOR\"\n}", "options": { "raw": { "language": "json" } } },
-            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] },
-            "description": "Register a new DONOR. New users start with PENDING_APPROVAL — an admin must approve before login."
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@blood.com\",\n  \"password\": \"Password1!\",\n  \"role\": \"DONOR\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Register a new DONOR. New users start with PENDING_APPROVAL \u2014 an admin must approve before login."
           }
         },
         {
           "name": "Login (Admin)",
-          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.success && json.data && json.data.token) {", "  pm.collectionVariables.set('token', json.data.token);", "}"], "type": "text/javascript" } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data && json.data.token) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@blood.com\",\n  \"password\": \"Admin1!\"\n}", "options": { "raw": { "language": "json" } } },
-            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@blood.com\",\n  \"password\": \"Admin1!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
             "description": "Login as seed admin. Token auto-saved to {{token}}."
           }
         },
         {
           "name": "Login (User)",
-          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.success && json.data && json.data.token) {", "  pm.collectionVariables.set('token', json.data.token);", "}"], "type": "text/javascript" } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data && json.data.token) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"john@blood.com\",\n  \"password\": \"Password1!\"\n}", "options": { "raw": { "language": "json" } } },
-            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@blood.com\",\n  \"password\": \"Password1!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
             "description": "Login as a non-admin user. Account must be ACTIVE (approved by admin)."
           }
         },
@@ -52,53 +167,156 @@
           "name": "Get Current User",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "Admin — User Management",
+      "name": "Admin \u2014 User Management",
       "item": [
         {
           "name": "Get All Users",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/admin/users", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users"
+              ]
+            }
           }
         },
         {
           "name": "Get Pending Users",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/admin/users/pending", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users", "pending"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "pending"
+              ]
+            }
           }
         },
         {
           "name": "Approve User",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/admin/users/25/approve", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users", "25", "approve"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/25/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "25",
+                "approve"
+              ]
+            }
           }
         },
         {
           "name": "Deactivate User",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/admin/users/25/deactivate", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users", "25", "deactivate"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/25/deactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "25",
+                "deactivate"
+              ]
+            }
           }
         },
         {
           "name": "Change User Role",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/admin/users/25/role?newRole=DONOR", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users", "25", "role"], "query": [{ "key": "newRole", "value": "DONOR" }] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/25/role?newRole=DONOR",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "25",
+                "role"
+              ],
+              "query": [
+                {
+                  "key": "newRole",
+                  "value": "DONOR"
+                }
+              ]
+            }
           }
         }
       ]
@@ -110,9 +328,35 @@
           "name": "Register Hospital",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Lagos General Hospital\",\n  \"address\": \"1 Marina Road\",\n  \"state\": \"Lagos\",\n  \"city\": \"Lagos Island\",\n  \"contact\": \"08012345678\"\n}", "options": { "raw": { "language": "json" } } },
-            "url": { "raw": "{{baseUrl}}/api/hospitals", "host": ["{{baseUrl}}"], "path": ["api", "hospitals"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Lagos General Hospital\",\n  \"address\": \"1 Marina Road\",\n  \"state\": \"Lagos\",\n  \"city\": \"Lagos Island\",\n  \"contact\": \"08012345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hospitals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hospitals"
+              ]
+            },
             "description": "ADMIN only. Duplicate name+city rejected with 409."
           }
         },
@@ -120,24 +364,69 @@
           "name": "Get All Hospitals",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/hospitals", "host": ["{{baseUrl}}"], "path": ["api", "hospitals"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/hospitals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hospitals"
+              ]
+            }
           }
         },
         {
           "name": "Get Hospital by ID",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/hospitals/1", "host": ["{{baseUrl}}"], "path": ["api", "hospitals", "1"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/hospitals/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hospitals",
+                "1"
+              ]
+            }
           }
         },
         {
           "name": "Deactivate Hospital",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/hospitals/1/deactivate", "host": ["{{baseUrl}}"], "path": ["api", "hospitals", "1", "deactivate"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/hospitals/1/deactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hospitals",
+                "1",
+                "deactivate"
+              ]
+            }
           }
         }
       ]
@@ -147,12 +436,51 @@
       "item": [
         {
           "name": "Register Donor",
-          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.success && json.data && json.data.id) {", "  pm.collectionVariables.set('donorId', json.data.id);", "}"], "type": "text/javascript" } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('donorId', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"John Doe\",\n  \"bloodGroup\": \"O+\",\n  \"phone\": \"08012345678\"\n}", "options": { "raw": { "language": "json" } } },
-            "url": { "raw": "{{baseUrl}}/api/donors", "host": ["{{baseUrl}}"], "path": ["api", "donors"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"bloodGroup\": \"O+\",\n  \"phone\": \"08012345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/donors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donors"
+              ]
+            },
             "description": "Register donor profile for the logged-in user. donorId auto-saved to {{donorId}}.\nValid bloodGroup: A+, A-, B+, B-, AB+, AB-, O+, O-"
           }
         },
@@ -160,34 +488,117 @@
           "name": "Get My Donor Profile",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/donors/me", "host": ["{{baseUrl}}"], "path": ["api", "donors", "me"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/donors/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donors",
+                "me"
+              ]
+            }
           }
         },
         {
           "name": "List All Donors",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/donors", "host": ["{{baseUrl}}"], "path": ["api", "donors"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/donors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donors"
+              ]
+            }
           }
         },
         {
           "name": "Record Donation",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"donationDate\": \"2026-06-16\",\n  \"hospitalName\": \"Lagos General Hospital\",\n  \"units\": 1\n}", "options": { "raw": { "language": "json" } } },
-            "url": { "raw": "{{baseUrl}}/api/donors/{{donorId}}/donations", "host": ["{{baseUrl}}"], "path": ["api", "donors", "{{donorId}}", "donations"] },
-            "description": "IDOR protected — only the donor can record their own donation. Updates eligibility to NOT_ELIGIBLE for 3 months."
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donationDate\": \"2026-06-16\",\n  \"hospitalName\": \"Lagos General Hospital\",\n  \"units\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/donors/{{donorId}}/donations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donors",
+                "{{donorId}}",
+                "donations"
+              ]
+            },
+            "description": "IDOR protected \u2014 only the donor can record their own donation. Updates eligibility to NOT_ELIGIBLE for 3 months."
           }
         },
         {
           "name": "Get Donation History",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/donors/{{donorId}}/donations?page=0&size=20", "host": ["{{baseUrl}}"], "path": ["api", "donors", "{{donorId}}", "donations"], "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/donors/{{donorId}}/donations?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donors",
+                "{{donorId}}",
+                "donations"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
             "description": "Paginated donation history, newest first. IDOR protected."
           }
         }
@@ -195,34 +606,91 @@
     },
     {
       "name": "Inventory",
-      "description": "InventoryController — /api/inventory\n\nWorkflow:\n1. Login as OFFICER/CLINICIAN/ADMIN (user must be linked to a hospital via hospitalId in JWT)\n2. Add Stock — inventoryId auto-saved to {{inventoryId}}\n3. Get Inventory — lists non-expired stock for your hospital\n4. Update Stock (correction) — PUT /{id}\n5. Get Audit Log — GET /{id}/audit",
+      "description": "InventoryController \u2014 /api/inventory\n\nWorkflow:\n1. Login as OFFICER/CLINICIAN/ADMIN (user must be linked to a hospital via hospitalId in JWT)\n2. Add Stock \u2014 inventoryId auto-saved to {{inventoryId}}\n3. Get Inventory \u2014 lists non-expired stock for your hospital\n4. Update Stock (correction) \u2014 PUT /{id}\n5. Get Audit Log \u2014 GET /{id}/audit",
       "item": [
         {
           "name": "Add Stock",
-          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.success && json.data && json.data.id) {", "  pm.collectionVariables.set('inventoryId', json.data.id);", "}"], "type": "text/javascript" } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('inventoryId', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"bloodGroup\": \"O+\",\n  \"units\": 10,\n  \"expiryDate\": \"2026-07-28\",\n  \"confirmShelfLife\": false\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/api/inventory", "host": ["{{baseUrl}}"], "path": ["api", "inventory"] },
-            "description": "Add blood stock for the authenticated user's hospital (scoped via JWT hospitalId).\n\nValid bloodGroup: A+, A-, B+, B-, AB+, AB-, O+, O-\n\nErrors:\n- 400: expiryDate is today or in the past\n- 422: shelf life > 42 days and confirmShelfLife=false (resubmit with confirmShelfLife=true)\n- 400: units <= 0\n\nSets inventoryId → {{inventoryId}}"
+            "url": {
+              "raw": "{{baseUrl}}/api/inventory",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inventory"
+              ]
+            },
+            "description": "Add blood stock for the authenticated user's hospital (scoped via JWT hospitalId).\n\nValid bloodGroup: A+, A-, B+, B-, AB+, AB-, O+, O-\n\nErrors:\n- 400: expiryDate is today or in the past\n- 422: shelf life > 42 days and confirmShelfLife=false (resubmit with confirmShelfLife=true)\n- 400: units <= 0\n\nSets inventoryId \u2192 {{inventoryId}}"
           }
         },
         {
-          "name": "Add Stock (long shelf life — confirmed)",
+          "name": "Add Stock (long shelf life \u2014 confirmed)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"bloodGroup\": \"A-\",\n  \"units\": 5,\n  \"expiryDate\": \"2026-12-31\",\n  \"confirmShelfLife\": true\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/api/inventory", "host": ["{{baseUrl}}"], "path": ["api", "inventory"] },
+            "url": {
+              "raw": "{{baseUrl}}/api/inventory",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inventory"
+              ]
+            },
             "description": "Resubmit with confirmShelfLife=true when expiry is more than 42 days away (e.g. frozen plasma)."
           }
         },
@@ -230,8 +698,22 @@
           "name": "Get Hospital Inventory",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/inventory", "host": ["{{baseUrl}}"], "path": ["api", "inventory"] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/inventory",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inventory"
+              ]
+            },
             "description": "Returns all non-expired inventory for the authenticated user's hospital. Expired records are filtered at query time."
           }
         },
@@ -239,13 +721,36 @@
           "name": "Update Stock (correction)",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"units\": 8,\n  \"reason\": \"Corrected after physical count — 2 units discarded (damaged bag)\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "raw": "{\n  \"units\": 8,\n  \"reason\": \"Corrected after physical count \u2014 2 units discarded (damaged bag)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/api/inventory/{{inventoryId}}", "host": ["{{baseUrl}}"], "path": ["api", "inventory", "{{inventoryId}}"] },
+            "url": {
+              "raw": "{{baseUrl}}/api/inventory/{{inventoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inventory",
+                "{{inventoryId}}"
+              ]
+            },
             "description": "Set absolute unit count with mandatory reason. Triggers audit log entry.\n\nErrors:\n- 400: units < 0\n- 400: units < reservedUnits\n- 404: inventory not found or belongs to another hospital\n- 409: concurrent update conflict (retry)"
           }
         },
@@ -253,9 +758,25 @@
           "name": "Get Audit Log",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/inventory/{{inventoryId}}/audit", "host": ["{{baseUrl}}"], "path": ["api", "inventory", "{{inventoryId}}", "audit"] },
-            "description": "Full audit trail for an inventory record — who changed what, when, and why. Ordered newest first."
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/inventory/{{inventoryId}}/audit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inventory",
+                "{{inventoryId}}",
+                "audit"
+              ]
+            },
+            "description": "Full audit trail for an inventory record \u2014 who changed what, when, and why. Ordered newest first."
           }
         }
       ]
@@ -264,97 +785,290 @@
       "name": "Notifications",
       "item": [
         {
-          "name": "Get Notifications",
+          "name": "Get All Notifications (Admin)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/notifications", "host": ["{{baseUrl}}"], "path": ["api", "notifications"] },
-            "description": "List all notifications. Created automatically when a donor registers."
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications"
+              ]
+            },
+            "description": "Admin only. Returns all notifications with status (PENDING/SENT/FAILED/DEAD_LETTER) and recipient."
+          }
+        },
+        {
+          "name": "Get Notifications by Hospital",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/hospital/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "hospital",
+                "1"
+              ]
+            },
+            "description": "Get all notifications for a specific hospital (by hospitalId)."
+          }
+        },
+        {
+          "name": "Get Notifications by Donor",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/donor/{{donorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "donor",
+                "{{donorId}}"
+              ]
+            },
+            "description": "Get all notifications for a specific donor."
+          }
+        },
+        {
+          "name": "Get Dead-Letter Queue (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/dead-letters",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "dead-letters"
+              ]
+            },
+            "description": "Admin only. Notifications that exhausted all 3 retry attempts. Used for manual review and re-trigger. Set notification.sms.force-fail=true in application.yml to exercise this path."
           }
         }
       ]
     },
     {
       "name": "Blood Search",
-      "description": "BloodSearchController — GET /api/search/blood\n\nSearch for a blood group across all active hospitals.\nResults are sorted by proximity to the requesting user's hospital (same city first, then same state, then others), sub-sorted by available units descending.\nReserved units are excluded from the available count.\nDeactivated hospitals are excluded.\nWhen no results are found, compatible donor groups are suggested.",
+      "description": "BloodSearchController \u2014 GET /api/search/blood\n\nSearch for a blood group across all active hospitals.\nResults are sorted by proximity to the requesting user's hospital (same city first, then same state, then others), sub-sorted by available units descending.\nReserved units are excluded from the available count.\nDeactivated hospitals are excluded.\nWhen no results are found, compatible donor groups are suggested.",
       "item": [
         {
-          "name": "Search Blood — O+",
+          "name": "Search Blood \u2014 O+",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/search/blood?bloodGroup=O%2B&page=0&size=20",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "search", "blood"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "search",
+                "blood"
+              ],
               "query": [
-                { "key": "bloodGroup", "value": "O+" },
-                { "key": "page", "value": "0" },
-                { "key": "size", "value": "20" }
+                {
+                  "key": "bloodGroup",
+                  "value": "O+"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
               ]
             },
-            "description": "Search all active hospitals for available O+ units.\n\nResponse data fields:\n- bloodGroup: the searched group\n- totalResults: total matching records\n- totalPages / page / size: pagination info\n- results[].availableUnits: unitsAvailable − unitsReserved\n- results[].lastUpdated: ISO timestamp — use to judge freshness\n- suggestions: non-null when results is empty — compatible donor groups to try next"
+            "description": "Search all active hospitals for available O+ units.\n\nResponse data fields:\n- bloodGroup: the searched group\n- totalResults: total matching records\n- totalPages / page / size: pagination info\n- results[].availableUnits: unitsAvailable \u2212 unitsReserved\n- results[].lastUpdated: ISO timestamp \u2014 use to judge freshness\n- suggestions: non-null when results is empty \u2014 compatible donor groups to try next"
           }
         },
         {
-          "name": "Search Blood — AB+ (universal recipient)",
+          "name": "Search Blood \u2014 AB+ (universal recipient)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/search/blood?bloodGroup=AB%2B&page=0&size=20",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "search", "blood"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "search",
+                "blood"
+              ],
               "query": [
-                { "key": "bloodGroup", "value": "AB+" },
-                { "key": "page", "value": "0" },
-                { "key": "size", "value": "20" }
+                {
+                  "key": "bloodGroup",
+                  "value": "AB+"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
               ]
             }
           }
         },
         {
-          "name": "Search Blood — invalid group (400)",
+          "name": "Search Blood \u2014 invalid group (400)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/search/blood?bloodGroup=O%2B%2B",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "search", "blood"],
-              "query": [{ "key": "bloodGroup", "value": "O++" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "search",
+                "blood"
+              ],
+              "query": [
+                {
+                  "key": "bloodGroup",
+                  "value": "O++"
+                }
+              ]
             },
             "description": "Expects 400 with valid values listed."
           }
         }
       ]
-    }
-  ,
+    },
     {
       "name": "Blood Transfers",
-      "description": "TransferController — /api/transfers\n\nFull transfer saga: PENDING → APPROVED → COMPLETED\n\nState machine:\n  PENDING → APPROVED | REJECTED | CANCELLED | INSUFFICIENT_STOCK\n  APPROVED → COMPLETED | CANCELLED | EXPIRED (48h auto-expire)\n\nWorkflow:\n1. Clinician searches blood (Blood Search folder)\n2. POST /api/transfers — creates request, reserves stock immediately\n3. Officer at source hospital: GET /api/transfers/pending → PUT /{id}/approve or /{id}/reject\n4. Officer at destination hospital: PUT /{id}/complete with unitsReceived\n5. Either party: PUT /{id}/cancel (APPROVED cancel releases reservation)\n\nAll requests require Authorization: Bearer {{token}}.\nSet {{transferId}} from the Create response.",
+      "description": "TransferController \u2014 /api/transfers\n\nFull transfer saga: PENDING \u2192 APPROVED \u2192 COMPLETED\n\nState machine:\n  PENDING \u2192 APPROVED | REJECTED | CANCELLED | INSUFFICIENT_STOCK\n  APPROVED \u2192 COMPLETED | CANCELLED | EXPIRED (48h auto-expire)\n\nWorkflow:\n1. Clinician searches blood (Blood Search folder)\n2. POST /api/transfers \u2014 creates request, reserves stock immediately\n3. Officer at source hospital: GET /api/transfers/pending \u2192 PUT /{id}/approve or /{id}/reject\n4. Officer at destination hospital: PUT /{id}/complete with unitsReceived\n5. Either party: PUT /{id}/cancel (APPROVED cancel releases reservation)\n\nAll requests require Authorization: Bearer {{token}}.\nSet {{transferId}} from the Create response.",
       "item": [
         {
           "name": "Create Transfer Request",
-          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.success && json.data && json.data.id) {", "  pm.collectionVariables.set('transferId', json.data.id);", "}"], "type": "text/javascript" } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('transferId', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"sourceHospitalId\": 1,\n  \"bloodGroup\": \"O+\",\n  \"quantity\": 3,\n  \"idempotencyKey\": \"req-001-2026-06-16\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/api/transfers", "host": ["{{baseUrl}}"], "path": ["api", "transfers"] },
-            "description": "TRANS-1: Submit a blood transfer request.\n\nRoles: CLINICIAN, OFFICER, ADMIN\n\nErrors:\n- 400: quantity ≤ 0, invalid blood group\n- 400: sourceHospitalId == own hospital\n- 409: duplicate idempotencyKey (double-click protection)\n- 409: source hospital deactivated\n- 409: insufficient stock at source (live check, not search index)\n\nAuto-saves transferId → {{transferId}}"
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transfers"
+              ]
+            },
+            "description": "TRANS-1: Submit a blood transfer request.\n\nRoles: CLINICIAN, OFFICER, ADMIN\n\nErrors:\n- 400: quantity \u2264 0, invalid blood group\n- 400: sourceHospitalId == own hospital\n- 409: duplicate idempotencyKey (double-click protection)\n- 409: source hospital deactivated\n- 409: insufficient stock at source (live check, not search index)\n\nAuto-saves transferId \u2192 {{transferId}}"
           }
         },
         {
           "name": "Get My Requests",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/transfers/my-requests", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "my-requests"] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers/my-requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transfers",
+                "my-requests"
+              ]
+            },
             "description": "Returns all transfer requests submitted by the authenticated user's hospital."
           }
         },
@@ -362,8 +1076,23 @@
           "name": "Get Pending Requests (Officer view)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/transfers/pending", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "pending"] },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers/pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transfers",
+                "pending"
+              ]
+            },
             "description": "OFFICER/ADMIN only. Returns PENDING requests targeting the authenticated user's hospital."
           }
         },
@@ -371,22 +1100,62 @@
           "name": "Approve Transfer",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/approve", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "approve"] },
-            "description": "TRANS-2: Approve a PENDING request.\n\nRoles: OFFICER, ADMIN (must belong to source hospital)\n\nErrors:\n- 403: officer belongs to a different hospital\n- 409: request was cancelled before approval\n- 409: concurrent approval — exactly one succeeds (optimistic locking)"
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers/{{transferId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transfers",
+                "{{transferId}}",
+                "approve"
+              ]
+            },
+            "description": "TRANS-2: Approve a PENDING request.\n\nRoles: OFFICER, ADMIN (must belong to source hospital)\n\nErrors:\n- 403: officer belongs to a different hospital\n- 409: request was cancelled before approval\n- 409: concurrent approval \u2014 exactly one succeeds (optimistic locking)"
           }
         },
         {
           "name": "Reject Transfer",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"reason\": \"No compatible stock available at this time\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/reject", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "reject"] },
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers/{{transferId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transfers",
+                "{{transferId}}",
+                "reject"
+              ]
+            },
             "description": "TRANS-3: Reject a PENDING request with a mandatory reason.\n\nRoles: OFFICER, ADMIN (must belong to source hospital)\n\nErrors:\n- 400: reason is missing\n- 409: request is already APPROVED (state machine enforced)"
           }
         },
@@ -394,13 +1163,37 @@
           "name": "Complete Transfer (full receipt)",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"unitsReceived\": 3\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/complete", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "complete"] },
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers/{{transferId}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transfers",
+                "{{transferId}}",
+                "complete"
+              ]
+            },
             "description": "TRANS-4: Confirm full receipt. Source deducts approved quantity; destination gains received units.\n\nRoles: OFFICER, CLINICIAN, ADMIN (must belong to requesting hospital)"
           }
         },
@@ -408,13 +1201,37 @@
           "name": "Complete Transfer (partial receipt / breakage)",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"unitsReceived\": 2\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/complete", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "complete"] },
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers/{{transferId}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transfers",
+                "{{transferId}}",
+                "complete"
+              ]
+            },
             "description": "TRANS-4 partial: fewer units arrived than approved (breakage/loss).\nSource deducts full approved amount; destination adds only received units. Discrepancy is audit-logged."
           }
         },
@@ -422,13 +1239,37 @@
           "name": "Complete Transfer (all expired in transit)",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"unitsReceived\": 0\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/complete", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "complete"] },
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers/{{transferId}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transfers",
+                "{{transferId}}",
+                "complete"
+              ]
+            },
             "description": "TRANS-4 expired-in-transit: unitsReceived=0 means all blood expired during transit.\nReservation is released; nothing is added to destination."
           }
         },
@@ -436,9 +1277,25 @@
           "name": "Cancel Transfer (PENDING)",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": { "raw": "{{baseUrl}}/api/transfers/{{transferId}}/cancel", "host": ["{{baseUrl}}"], "path": ["api", "transfers", "{{transferId}}", "cancel"] },
-            "description": "TRANS-5: Cancel a PENDING or APPROVED request.\n\nPENDING → reservation released.\nAPPROVED → reservation released (compensating action).\nCOMPLETED → 409 (cannot cancel).\n\nRoles: CLINICIAN/OFFICER at requesting hospital, or officer at source hospital."
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers/{{transferId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "transfers",
+                "{{transferId}}",
+                "cancel"
+              ]
+            },
+            "description": "TRANS-5: Cancel a PENDING or APPROVED request.\n\nPENDING \u2192 reservation released.\nAPPROVED \u2192 reservation released (compensating action).\nCOMPLETED \u2192 409 (cannot cancel).\n\nRoles: CLINICIAN/OFFICER at requesting hospital, or officer at source hospital."
           }
         }
       ]
