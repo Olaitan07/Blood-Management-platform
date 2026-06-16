@@ -91,6 +91,9 @@ class TransferInventoryPortImpl implements TransferInventoryPort {
         BloodInventory source = inventoryRepository.findById(sourceInventoryId)
                 .orElseThrow(() -> new IllegalStateException("Source inventory not found: " + sourceInventoryId));
 
+        LocalDate expiryDate = source.getExpiryDate();
+        String bloodGroup = source.getBloodGroup().getValue();
+
         // Deduct from source: reduce both available and reserved
         source.setUnitsAvailable(source.getUnitsAvailable() - units);
         source.setUnitsReserved(Math.max(0, source.getUnitsReserved() - units));
@@ -107,9 +110,6 @@ class TransferInventoryPortImpl implements TransferInventoryPort {
                 .changedBy(actor)
                 .changedAt(LocalDateTime.now(clock))
                 .build());
-
-        LocalDate expiryDate = source.getExpiryDate();
-        String bloodGroup = source.getBloodGroup().getValue();
 
         // Add to destination: find existing record for same group+expiry or create new
         BloodInventory dest = inventoryRepository
