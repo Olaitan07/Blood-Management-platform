@@ -9,6 +9,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -27,8 +28,22 @@ public class Donor {
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Column(name = "blood_type", nullable = false, length = 5)
-    private String bloodType;
+    @Column(name = "blood_group", nullable = false, length = 5)
+    private BloodGroup bloodGroup;
+
+    @Column(name = "phone", nullable = false, unique = true, length = 20)
+    private String phone;
+
+    @Column(name = "user_email", nullable = false, unique = true, length = 100)
+    private String userEmail;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "eligibility_status", nullable = false, length = 15)
+    @Builder.Default
+    private EligibilityStatus eligibilityStatus = EligibilityStatus.ELIGIBLE;
+
+    @Column(name = "last_donation_date")
+    private LocalDate lastDonationDate;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

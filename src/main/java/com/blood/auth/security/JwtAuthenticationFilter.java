@@ -16,10 +16,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -58,14 +59,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                if (jwtService.isTokenValid(jwt, (com.blood.auth.model.User) userDetails)) {
+                com.blood.auth.model.User user = (com.blood.auth.model.User) userDetails;
+                if (jwtService.isTokenValid(jwt, user)) {
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
                                     null,
                                     userDetails.getAuthorities()
                             );
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    // Store hospitalId in details so inventory module can scope requests
+                    // without importing auth.model.User directly
+                    Map<String, Object> details = new HashMap<>();
+                    details.put("hospitalId", user.getHospitalId());
+                    authToken.setDetails(details);
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
