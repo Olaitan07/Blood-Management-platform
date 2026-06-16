@@ -1,6 +1,7 @@
 package com.blood.notification.listener;
 
 import com.blood.notification.model.Notification;
+import com.blood.notification.model.NotificationStatus;
 import com.blood.notification.model.ProcessedEvent;
 import com.blood.notification.repository.NotificationRepository;
 import com.blood.notification.repository.ProcessedEventRepository;
@@ -31,7 +32,7 @@ public class TransferEventListener {
                 event.transferId(), event.quantity(), event.bloodGroup(), event.requestingHospitalId());
 
         saveNotification(event.transferId(), event.sourceHospitalId(), message, key);
-        log.info("Notification queued for transfer request: id={}", event.transferId());
+        log.info("Notification saved (PENDING) for transfer request: id={}", event.transferId());
     }
 
     @ApplicationModuleListener
@@ -44,7 +45,7 @@ public class TransferEventListener {
                 event.transferId(), event.quantity(), event.bloodGroup(), event.sourceHospitalId());
 
         saveNotification(event.transferId(), event.requestingHospitalId(), message, key);
-        log.info("Notification queued for transfer approval: id={}", event.transferId());
+        log.info("Notification saved (PENDING) for transfer approval: id={}", event.transferId());
     }
 
     @ApplicationModuleListener
@@ -57,7 +58,7 @@ public class TransferEventListener {
                 event.transferId(), event.sourceHospitalId(), event.reason());
 
         saveNotification(event.transferId(), event.requestingHospitalId(), message, key);
-        log.info("Notification queued for transfer rejection: id={}", event.transferId());
+        log.info("Notification saved (PENDING) for transfer rejection: id={}", event.transferId());
     }
 
     @ApplicationModuleListener
@@ -71,7 +72,7 @@ public class TransferEventListener {
                 event.bloodGroup(), event.sourceHospitalId());
 
         saveNotification(event.transferId(), event.requestingHospitalId(), message, key);
-        log.info("Notification queued for transfer completion: id={}", event.transferId());
+        log.info("Notification saved (PENDING) for transfer completion: id={}", event.transferId());
     }
 
     @ApplicationModuleListener
@@ -94,7 +95,7 @@ public class TransferEventListener {
                 .processedAt(Instant.now())
                 .build());
 
-        log.info("Notification queued for transfer cancellation: id={}", event.transferId());
+        log.info("Notification saved (PENDING) for transfer cancellation: id={}", event.transferId());
     }
 
     private boolean isDuplicate(String key) {
@@ -109,9 +110,11 @@ public class TransferEventListener {
         notificationRepository.save(Notification.builder()
                 .transferId(transferId)
                 .hospitalId(hospitalId)
+                .recipient("hospital:" + hospitalId)
                 .message(message)
                 .sentAt(LocalDateTime.now())
                 .type("TRANSFER")
+                .status(NotificationStatus.PENDING)
                 .build());
 
         processedEventRepository.save(ProcessedEvent.builder()
