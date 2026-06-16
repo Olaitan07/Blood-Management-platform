@@ -1,0 +1,64 @@
+.claude/
+cat > .gitignore << 'EOF'
+# ---- Build output ----
+target/
+build/
+!**/src/main/**/target/
+!**/src/test/**/target/
+out/
+bin/
+
+# ---- Maven ----
+.mvn/wrapper/maven-wrapper.jar
+# (keep mvnw, mvnw.cmd, and .mvn/wrapper/maven-wrapper.properties — they belong in the repo)
+
+# ---- Gradle (if you use Gradle instead of Maven) ----
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# ---- IntelliJ IDEA ----
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ---- Eclipse / STS ----
+.settings/
+.project
+.classpath
+.springBeans
+.sts4-cache/
+
+# ---- VS Code ----
+.vscode/
+
+# ---- NetBeans ----
+nbproject/
+nbbuild/
+nbdist/
+
+# ---- OS files ----
+.DS_Store
+Thumbs.db
+
+# ---- Logs ----
+*.log
+logs/
+
+# ---- Secrets & environment (IMPORTANT) ----
+.env
+.env.local
+*.pem
+*.key
+application-local.yml
+application-local.properties
+application-secret*.yml
+application-secret*.properties
+
+
+
+# ---- Misc ----
+*.tmp
+*.bak
+EOF

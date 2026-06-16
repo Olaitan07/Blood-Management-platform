@@ -1,0 +1,4 @@
+ALTER TABLE users ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'PENDING_APPROVAL';
+UPDATE users SET status = CASE WHEN active = true THEN 'ACTIVE' ELSE 'SUSPENDED' END;
+ALTER TABLE users DROP COLUMN active;
+CREATE INDEX idx_users_status ON users(status);
