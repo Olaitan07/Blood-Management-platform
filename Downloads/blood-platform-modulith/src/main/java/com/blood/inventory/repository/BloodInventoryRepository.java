@@ -31,4 +31,15 @@ public interface BloodInventoryRepository extends JpaRepository<BloodInventory, 
     Optional<BloodInventory> findByIdAndHospitalId(Long id, Long hospitalId);
 
     List<BloodInventory> findByHospitalId(Long hospitalId);
+
+    // Cross-hospital search — used by the inventory::search named interface
+    @Query("SELECT i FROM BloodInventory i " +
+           "WHERE i.hospitalId IN :hospitalIds " +
+           "AND i.bloodGroup = :bloodGroup " +
+           "AND i.expiryDate >= :today " +
+           "AND (i.unitsAvailable - i.unitsReserved) > 0")
+    List<BloodInventory> findAvailableByBloodGroupAcrossHospitals(
+            @Param("bloodGroup") BloodGroup bloodGroup,
+            @Param("hospitalIds") List<Long> hospitalIds,
+            @Param("today") LocalDate today);
 }
