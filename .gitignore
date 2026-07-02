@@ -1,5 +1,5 @@
 .claude/
-cat > .gitignore << 'EOF'
+
 # ---- Build output ----
 target/
 build/
@@ -61,4 +61,6 @@ application-secret*.properties
 # ---- Misc ----
 *.tmp
 *.bak
-EOF
+
+# ---- Playwright MCP test artifacts ----
+.playwright-mcp/
