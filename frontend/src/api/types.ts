@@ -1,0 +1,189 @@
+// Mirrors the actual backend DTOs verified against source — not an idealized contract.
+
+export type Role = 'DONOR' | 'CLINICIAN' | 'OFFICER' | 'ADMIN'
+
+export type AccountStatus = 'PENDING_APPROVAL' | 'ACTIVE' | 'SUSPENDED'
+
+export const ROLES_REQUIRING_HOSPITAL: Role[] = ['CLINICIAN', 'OFFICER']
+
+export interface ApiResponse<T> {
+  success: boolean
+  message: string
+  data?: T
+  // Either a Map<string,string> of field/object-name -> message, or absent.
+  errors?: Record<string, string>
+  timestamp: string
+}
+
+export interface UserResponse {
+  id: number
+  name: string
+  email: string
+  role: Role
+  hospitalId: number | null
+  status: AccountStatus
+  createdAt: string
+}
+
+export interface AuthResponse {
+  token: string
+  type: string
+  userId: number
+  name: string
+  email: string
+  role: Role
+  accountStatus: AccountStatus
+}
+
+export interface RegisterRequest {
+  name: string
+  email: string
+  password: string
+  role: Role
+  hospitalId?: number | null
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface JwtClaims {
+  sub: string
+  role: Role
+  userId: number
+  name: string
+  iat: number
+  exp: number
+}
+
+export type HospitalStatus = 'ACTIVE' | 'INACTIVE'
+
+export interface HospitalResponse {
+  id: number
+  name: string
+  address: string
+  state: string
+  city: string
+  contact: string
+  status: HospitalStatus
+  createdAt: string
+}
+
+export interface HospitalRequest {
+  name: string
+  address: string
+  state: string
+  city: string
+  contact: string
+}
+
+export type BloodGroup = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'
+
+export const BLOOD_GROUPS: BloodGroup[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+
+export type EligibilityStatus = 'ELIGIBLE' | 'NOT_ELIGIBLE'
+
+export interface DonorResponse {
+  id: number
+  fullName: string
+  bloodGroup: BloodGroup
+  phone: string
+  eligibilityStatus: EligibilityStatus
+  eligibleFrom: string | null
+  lastDonationDate: string | null
+  createdAt: string
+}
+
+// No email field — the backend derives user_email from the authenticated
+// principal on POST /api/donors, never from the request body.
+export interface DonorRequest {
+  fullName: string
+  bloodGroup: BloodGroup
+  phone: string
+}
+
+export interface DonationResponse {
+  id: number
+  donationDate: string
+  hospitalName: string
+  units: number
+  createdAt: string
+}
+
+// Mirrors Spring Data's Page<T> JSON shape (GET /api/donors/{id}/donations
+// is genuinely server-paginated, unlike most other list endpoints).
+export interface PageResponse<T> {
+  content: T[]
+  totalPages: number
+  totalElements: number
+  number: number
+  size: number
+  first: boolean
+  last: boolean
+  empty: boolean
+}
+
+export type InventoryStatus = 'AVAILABLE' | 'EXPIRING_SOON' | 'EXPIRED'
+
+export interface InventoryResponse {
+  id: number
+  hospitalId: number
+  bloodGroup: BloodGroup
+  unitsAvailable: number
+  unitsReserved: number
+  expiryDate: string
+  status: InventoryStatus
+  lastUpdated: string
+  shelfLifeWarning: boolean
+}
+
+export interface AddInventoryRequest {
+  bloodGroup: BloodGroup
+  units: number
+  expiryDate: string
+  confirmShelfLife: boolean
+}
+
+export interface UpdateInventoryRequest {
+  units: number
+  reason: string
+}
+
+export interface AuditLogResponse {
+  id: number
+  inventoryId: number
+  hospitalId: number
+  bloodGroup: BloodGroup
+  oldUnits: number
+  newUnits: number
+  reason: string
+  changedBy: string
+  changedAt: string
+}
+
+export interface BloodSearchResult {
+  hospitalId: number
+  hospitalName: string
+  city: string
+  state: string
+  bloodGroup: BloodGroup
+  availableUnits: number
+  lastUpdated: string
+}
+
+// Real page-shaped response, but no distance/mileage field exists anywhere in
+// it — the backend has no hospital coordinates, so "sorted by proximity" is a
+// coarse same-city/same-state/other bucket, not a computed distance.
+export interface BloodSearchResponse {
+  bloodGroup: BloodGroup
+  page: number
+  size: number
+  totalResults: number
+  totalPages: number
+  results: BloodSearchResult[]
+  // Compatible donor groups to try instead — only populated when results is
+  // empty, and can be zero (e.g. searching O-, which has no other donors),
+  // one, or several (e.g. AB+ accepts from all 8 groups).
+  suggestions: BloodGroup[] | null
+}

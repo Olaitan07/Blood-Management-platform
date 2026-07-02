@@ -37,6 +37,16 @@ services:
     networks:
       - blood-network
 
+  frontend:
+    build: ./frontend
+    container_name: blood-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - app
+    networks:
+      - blood-network
+
 volumes:
   postgres_data:
 
