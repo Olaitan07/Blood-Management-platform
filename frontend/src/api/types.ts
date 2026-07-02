@@ -69,3 +69,121 @@ export interface HospitalResponse {
   status: HospitalStatus
   createdAt: string
 }
+
+export interface HospitalRequest {
+  name: string
+  address: string
+  state: string
+  city: string
+  contact: string
+}
+
+export type BloodGroup = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'
+
+export const BLOOD_GROUPS: BloodGroup[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+
+export type EligibilityStatus = 'ELIGIBLE' | 'NOT_ELIGIBLE'
+
+export interface DonorResponse {
+  id: number
+  fullName: string
+  bloodGroup: BloodGroup
+  phone: string
+  eligibilityStatus: EligibilityStatus
+  eligibleFrom: string | null
+  lastDonationDate: string | null
+  createdAt: string
+}
+
+// No email field — the backend derives user_email from the authenticated
+// principal on POST /api/donors, never from the request body.
+export interface DonorRequest {
+  fullName: string
+  bloodGroup: BloodGroup
+  phone: string
+}
+
+export interface DonationResponse {
+  id: number
+  donationDate: string
+  hospitalName: string
+  units: number
+  createdAt: string
+}
+
+// Mirrors Spring Data's Page<T> JSON shape (GET /api/donors/{id}/donations
+// is genuinely server-paginated, unlike most other list endpoints).
+export interface PageResponse<T> {
+  content: T[]
+  totalPages: number
+  totalElements: number
+  number: number
+  size: number
+  first: boolean
+  last: boolean
+  empty: boolean
+}
+
+export type InventoryStatus = 'AVAILABLE' | 'EXPIRING_SOON' | 'EXPIRED'
+
+export interface InventoryResponse {
+  id: number
+  hospitalId: number
+  bloodGroup: BloodGroup
+  unitsAvailable: number
+  unitsReserved: number
+  expiryDate: string
+  status: InventoryStatus
+  lastUpdated: string
+  shelfLifeWarning: boolean
+}
+
+export interface AddInventoryRequest {
+  bloodGroup: BloodGroup
+  units: number
+  expiryDate: string
+  confirmShelfLife: boolean
+}
+
+export interface UpdateInventoryRequest {
+  units: number
+  reason: string
+}
+
+export interface AuditLogResponse {
+  id: number
+  inventoryId: number
+  hospitalId: number
+  bloodGroup: BloodGroup
+  oldUnits: number
+  newUnits: number
+  reason: string
+  changedBy: string
+  changedAt: string
+}
+
+export interface BloodSearchResult {
+  hospitalId: number
+  hospitalName: string
+  city: string
+  state: string
+  bloodGroup: BloodGroup
+  availableUnits: number
+  lastUpdated: string
+}
+
+// Real page-shaped response, but no distance/mileage field exists anywhere in
+// it — the backend has no hospital coordinates, so "sorted by proximity" is a
+// coarse same-city/same-state/other bucket, not a computed distance.
+export interface BloodSearchResponse {
+  bloodGroup: BloodGroup
+  page: number
+  size: number
+  totalResults: number
+  totalPages: number
+  results: BloodSearchResult[]
+  // Compatible donor groups to try instead — only populated when results is
+  // empty, and can be zero (e.g. searching O-, which has no other donors),
+  // one, or several (e.g. AB+ accepts from all 8 groups).
+  suggestions: BloodGroup[] | null
+}

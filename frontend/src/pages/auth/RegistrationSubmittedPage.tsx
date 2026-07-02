@@ -2,12 +2,12 @@ import { Link, useLocation } from 'react-router-dom'
 import { AuthCard } from '@/components/AuthCard'
 
 interface LocationState {
-  hospitalId?: number | null
+  hospitalName?: string | null
 }
 
 export function RegistrationSubmittedPage() {
   const location = useLocation()
-  const { hospitalId } = (location.state as LocationState | null) ?? {}
+  const { hospitalName } = (location.state as LocationState | null) ?? {}
 
   return (
     <AuthCard>
@@ -20,8 +20,8 @@ export function RegistrationSubmittedPage() {
         <h1 className="mt-4 text-xl font-semibold text-gray-100">Registration submitted</h1>
         <p className="mt-2 text-sm text-gray-400">
           Your account is pending approval from an administrator
-          {hospitalId ? ` at Hospital #${hospitalId}` : ''}. You&apos;ll receive an email once
-          it&apos;s approved.
+          {hospitalName ? ` at ${hospitalName}` : ''}. You&apos;ll receive an email once it&apos;s
+          approved.
         </p>
         <Link
           to="/login"
