@@ -9,6 +9,18 @@ export function HomePage() {
     return <Navigate to="/admin/users" replace />
   }
 
+  if (user?.role === 'DONOR') {
+    return <Navigate to="/donor" replace />
+  }
+
+  if (user?.role === 'OFFICER') {
+    return <Navigate to="/inventory" replace />
+  }
+
+  if (user?.role === 'CLINICIAN') {
+    return <Navigate to="/search" replace />
+  }
+
   return (
     <PlaceholderPage
       title={`Welcome, ${user?.name ?? ''}`}

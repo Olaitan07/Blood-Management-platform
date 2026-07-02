@@ -1,11 +1,13 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { AuthCard } from '@/components/AuthCard'
 import { Button } from '@/components/Button'
 import { TextField } from '@/components/TextField'
 import { Select } from '@/components/Select'
 import { PasswordStrengthMeter } from '@/components/PasswordStrengthMeter'
 import { register } from '@/api/auth'
+import { listHospitals } from '@/api/hospitals'
 import { ApiError } from '@/api/client'
 import { ROLES_REQUIRING_HOSPITAL, type Role } from '@/api/types'
 
@@ -49,12 +51,8 @@ function validate(form: FormState): FieldErrors {
   } else if (form.password.length < 8 || !/\d/.test(form.password)) {
     errors.password = 'Password must be at least 8 characters and contain at least one digit'
   }
-  if (ROLES_REQUIRING_HOSPITAL.includes(form.role)) {
-    if (!form.hospitalId.trim()) {
-      errors.hospitalId = 'Hospital ID is required for the selected role'
-    } else if (!/^\d+$/.test(form.hospitalId.trim())) {
-      errors.hospitalId = 'Hospital ID must be a number'
-    }
+  if (ROLES_REQUIRING_HOSPITAL.includes(form.role) && !form.hospitalId) {
+    errors.hospitalId = 'Please select a hospital'
   }
   return errors
 }
@@ -101,6 +99,14 @@ export function RegisterPage() {
 
   const requiresHospital = useMemo(() => ROLES_REQUIRING_HOSPITAL.includes(form.role), [form.role])
 
+  // Public — the register form is anonymous, so this hits the unauthenticated
+  // GET /api/hospitals route (active hospitals only, the endpoint's default).
+  const hospitalsQuery = useQuery({
+    queryKey: ['public-hospitals'],
+    queryFn: () => listHospitals(),
+    enabled: requiresHospital,
+  })
+
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
@@ -122,7 +128,8 @@ export function RegisterPage() {
         role: form.role,
         hospitalId: requiresHospital ? Number(form.hospitalId) : null,
       })
-      navigate('/registration-submitted', { state: { hospitalId: user.hospitalId } })
+      const hospitalName = hospitalsQuery.data?.find((h) => h.id === user.hospitalId)?.name
+      navigate('/registration-submitted', { state: { hospitalName } })
     } catch (err) {
       setErrors(mapApiError(err as ApiError))
     } finally {
@@ -191,17 +198,45 @@ export function RegisterPage() {
             ))}
           </Select>
 
-          <TextField
-            label="Hospital ID"
-            type="text"
-            inputMode="numeric"
-            placeholder={requiresHospital ? 'e.g. 3' : 'Not required'}
-            value={form.hospitalId}
-            onChange={(e) => update('hospitalId', e.target.value)}
-            error={errors.hospitalId}
-            disabled={!requiresHospital}
-            hint={requiresHospital ? undefined : 'Not required for this role'}
-          />
+          {requiresHospital ? (
+            <div className="flex flex-col gap-1.5">
+              <Select
+                label="Hospital"
+                value={form.hospitalId}
+                onChange={(e) => update('hospitalId', e.target.value)}
+                error={errors.hospitalId}
+                disabled={hospitalsQuery.isLoading || hospitalsQuery.isError}
+              >
+                <option value="">
+                  {hospitalsQuery.isLoading ? 'Loading hospitals…' : 'Select a hospital'}
+                </option>
+                {hospitalsQuery.data?.map((h) => (
+                  <option key={h.id} value={h.id}>
+                    {h.name} — {h.city}
+                  </option>
+                ))}
+              </Select>
+              {hospitalsQuery.isError && (
+                <p className="text-sm text-red-400">
+                  Couldn&apos;t load hospitals.{' '}
+                  <button
+                    type="button"
+                    onClick={() => hospitalsQuery.refetch()}
+                    className="underline"
+                  >
+                    Retry
+                  </button>
+                </p>
+              )}
+              {hospitalsQuery.isSuccess && hospitalsQuery.data.length === 0 && (
+                <p className="text-sm text-gray-500">
+                  No hospitals are registered yet — contact an administrator.
+                </p>
+              )}
+            </div>
+          ) : (
+            <TextField label="Hospital" value="Not required" disabled hint="Not required for this role" />
+          )}
         </div>
 
         <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
