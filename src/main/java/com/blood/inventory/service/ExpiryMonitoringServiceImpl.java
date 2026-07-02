@@ -75,7 +75,7 @@ class ExpiryMonitoringServiceImpl implements ExpiryMonitoringService {
         if (expiring.isEmpty()) return;
 
         Map<Long, List<BloodInventory>> byHospital = expiring.stream()
-                .collect(Collectors.groupingBy(BloodInventory::getHospitalId));
+                .collect(Collectors.groupingBy(inv -> inv.getHospitalId()));
 
         byHospital.forEach((hospitalId, items) -> {
             List<BloodExpiringEvent.ExpiringItem> eventItems = items.stream()

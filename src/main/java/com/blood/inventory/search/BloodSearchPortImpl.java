@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,7 +14,6 @@ import java.util.List;
 class BloodSearchPortImpl implements BloodSearchPort {
 
     private final BloodInventoryRepository inventoryRepository;
-    private final Clock clock;
 
     @Override
     @Transactional(readOnly = true)
