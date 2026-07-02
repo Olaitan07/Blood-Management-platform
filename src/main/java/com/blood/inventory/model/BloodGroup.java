@@ -30,7 +30,7 @@ public enum BloodGroup {
     }
 
     public static final List<String> VALID_VALUES = Arrays.stream(values())
-            .map(BloodGroup::getValue)
+            .map(bg -> bg.getValue())
             .toList();
 
     @JsonCreator

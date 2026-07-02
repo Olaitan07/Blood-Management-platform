@@ -13,15 +13,25 @@ import java.time.Instant;
 @Repository
 public interface AuditRecordRepository extends JpaRepository<AuditRecord, Long> {
 
-    @Query("""
-            SELECT a FROM AuditRecord a
-            WHERE (:eventType IS NULL OR a.eventType = :eventType)
-              AND (:actor     IS NULL OR a.actor     = :actor)
-              AND (:targetType IS NULL OR a.targetType = :targetType)
-              AND (:from IS NULL OR a.occurredAt >= :from)
-              AND (:to   IS NULL OR a.occurredAt <= :to)
-            ORDER BY a.occurredAt DESC, a.id DESC
-            """)
+    @Query(
+            value = """
+                    SELECT * FROM audit_records
+                    WHERE (:eventType IS NULL OR event_type = :eventType)
+                      AND (:actor     IS NULL OR actor      = :actor)
+                      AND (:targetType IS NULL OR target_type = :targetType)
+                      AND (:from::timestamptz IS NULL OR occurred_at >= :from::timestamptz)
+                      AND (:to::timestamptz   IS NULL OR occurred_at <= :to::timestamptz)
+                    ORDER BY occurred_at DESC, id DESC
+                    """,
+            countQuery = """
+                    SELECT count(*) FROM audit_records
+                    WHERE (:eventType IS NULL OR event_type = :eventType)
+                      AND (:actor     IS NULL OR actor      = :actor)
+                      AND (:targetType IS NULL OR target_type = :targetType)
+                      AND (:from::timestamptz IS NULL OR occurred_at >= :from::timestamptz)
+                      AND (:to::timestamptz   IS NULL OR occurred_at <= :to::timestamptz)
+                    """,
+            nativeQuery = true)
     Page<AuditRecord> filter(
             @Param("eventType")  String eventType,
             @Param("actor")      String actor,
