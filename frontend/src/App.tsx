@@ -8,12 +8,17 @@ import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage'
 import { HomePage } from '@/pages/HomePage'
 import { UserManagementPage } from '@/pages/admin/UserManagementPage'
 import { HospitalManagementPage } from '@/pages/admin/HospitalManagementPage'
+import { AuditLogPage } from '@/pages/admin/AuditLogPage'
+import { ReportsPage } from '@/pages/admin/ReportsPage'
 import { DonorProfilePage } from '@/pages/donor/DonorProfilePage'
 import { DonationHistoryPage } from '@/pages/donor/DonationHistoryPage'
 import { InventoryListPage } from '@/pages/officer/InventoryListPage'
 import { InventoryAuditPage } from '@/pages/officer/InventoryAuditPage'
+import { PendingRequestsPage } from '@/pages/officer/PendingRequestsPage'
+import { IncomingTransfersPage } from '@/pages/officer/IncomingTransfersPage'
 import { SearchPage } from '@/pages/clinician/SearchPage'
-import { NewTransferPlaceholderPage } from '@/pages/clinician/NewTransferPlaceholderPage'
+import { RequestsPage } from '@/pages/clinician/RequestsPage'
+import { NotificationCenterPage } from '@/pages/NotificationCenterPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
 
 export function App() {
@@ -27,10 +32,13 @@ export function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/notifications" element={<NotificationCenterPage />} />
 
           <Route element={<RoleRoute allow={['ADMIN']} />}>
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/hospitals" element={<HospitalManagementPage />} />
+            <Route path="/admin/audit" element={<AuditLogPage />} />
+            <Route path="/admin/reports" element={<ReportsPage />} />
           </Route>
 
           <Route element={<RoleRoute allow={['DONOR']} />}>
@@ -41,11 +49,19 @@ export function App() {
           <Route element={<RoleRoute allow={['OFFICER']} />}>
             <Route path="/inventory" element={<InventoryListPage />} />
             <Route path="/inventory/:id/audit" element={<InventoryAuditPage />} />
+            <Route path="/transfers/pending" element={<PendingRequestsPage />} />
+            <Route path="/transfers/incoming" element={<IncomingTransfersPage />} />
           </Route>
 
           <Route element={<RoleRoute allow={['CLINICIAN']} />}>
             <Route path="/search" element={<SearchPage />} />
-            <Route path="/transfers/new" element={<NewTransferPlaceholderPage />} />
+          </Route>
+
+          {/* Backend allows OFFICER on GET /my-requests too (hospital-wide,
+              not clinician-exclusive) — reachable here mainly via a transfer
+              notification about the officer's own hospital's outgoing request. */}
+          <Route element={<RoleRoute allow={['CLINICIAN', 'OFFICER']} />}>
+            <Route path="/transfers/my-requests" element={<RequestsPage />} />
           </Route>
         </Route>
       </Route>

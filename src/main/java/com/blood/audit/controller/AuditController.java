@@ -40,11 +40,14 @@ public class AuditController {
 
         if (size > 100) size = 100;
 
-        Instant fromInstant = from != null ? Instant.parse(from) : null;
-        Instant toInstant   = to   != null ? Instant.parse(to)   : null;
+        // Validate eagerly (fail fast on a malformed instant) but pass the
+        // raw string through — see AuditRecordRepository for why from/to
+        // travel as String rather than Instant all the way to the query.
+        if (from != null) Instant.parse(from);
+        if (to != null) Instant.parse(to);
 
         return ResponseEntity.ok(
-                auditService.query(eventType, actor, targetType, fromInstant, toInstant, page, size));
+                auditService.query(eventType, actor, targetType, from, to, page, size));
     }
 
     // ── Append-only enforcement ────────────────────────────────────────────────

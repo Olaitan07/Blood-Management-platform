@@ -7,7 +7,11 @@ public record NotificationResponse(
         String recipient,
         String message,
         String status,
-        String sentAt
+        String sentAt,
+        String type,
+        Long donorId,
+        Long transferId,
+        boolean read
 ) {
 
     public static NotificationResponse from(Notification notification) {
@@ -16,7 +20,11 @@ public record NotificationResponse(
                 notification.getRecipient(),
                 notification.getMessage(),
                 notification.getStatus() != null ? notification.getStatus().name() : null,
-                notification.getSentAt() != null ? notification.getSentAt().toString() : null
+                notification.getSentAt() != null ? notification.getSentAt().toString() : null,
+                notification.getType(),
+                notification.getDonorId(),
+                notification.getTransferId(),
+                notification.isRead()
         );
     }
 }

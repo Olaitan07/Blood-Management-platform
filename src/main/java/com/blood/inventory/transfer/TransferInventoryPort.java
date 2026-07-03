@@ -21,12 +21,16 @@ public interface TransferInventoryPort {
     void release(Long inventoryId, int quantity, String actor);
 
     /**
-     * Finalises a completed transfer:
-     * deducts {@code units} from source inventory and adds them to the destination.
+     * Finalises a completed transfer. The full {@code approvedUnits} always
+     * leaves the source (that's what was physically shipped, regardless of
+     * what arrives), but only {@code receivedUnits} is credited to the
+     * destination — any shortfall (breakage, expiry in transit) is a real
+     * loss, not silently moved to either hospital's available stock.
      * The expiry date is read directly from the source inventory record.
      *
-     * @return the new (or updated) destination inventory ID
+     * @return the new (or updated) destination inventory ID, or null if
+     *         receivedUnits is 0 (nothing to credit at the destination)
      */
-    Long finalizeTransfer(Long sourceInventoryId, int units,
+    Long finalizeTransfer(Long sourceInventoryId, int approvedUnits, int receivedUnits,
                           Long destHospitalId, String actor);
 }

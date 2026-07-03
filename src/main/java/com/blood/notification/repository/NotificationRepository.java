@@ -3,6 +3,7 @@ package com.blood.notification.repository;
 import com.blood.notification.model.Notification;
 import com.blood.notification.model.NotificationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -24,4 +25,12 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findDispatchEligible(
             @Param("statuses") List<NotificationStatus> statuses,
             @Param("maxRetries") int maxRetries);
+
+    @Modifying
+    @Query("UPDATE Notification n SET n.read = true WHERE n.hospitalId = :hospitalId AND n.read = false")
+    int markAllReadByHospital(@Param("hospitalId") Long hospitalId);
+
+    @Modifying
+    @Query("UPDATE Notification n SET n.read = true WHERE n.donorId = :donorId AND n.read = false")
+    int markAllReadByDonor(@Param("donorId") Long donorId);
 }

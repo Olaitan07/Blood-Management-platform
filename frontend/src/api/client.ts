@@ -1,5 +1,4 @@
 import axios, { AxiosError } from 'axios'
-import type { ApiResponse } from './types'
 
 // Normalized shape every screen can rely on, regardless of whether the
 // backend responded with the app's ApiResponse envelope (most errors) or
@@ -42,9 +41,9 @@ export function registerUnauthorizedHandler(handler: () => void) {
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<ApiResponse<unknown> | undefined>) => {
+  (error: AxiosError<unknown>) => {
     const status = error.response?.status ?? 0
-    const body = error.response?.data
+    const body = error.response?.data as Record<string, unknown> | undefined
 
     // A previously-valid-looking token that now gets 401/403 means the
     // session was invalidated server-side (JwtAuthenticationFilter reloads
@@ -53,8 +52,16 @@ apiClient.interceptors.response.use(
       onUnauthorized?.()
     }
 
-    if (body && typeof body === 'object' && 'message' in body) {
-      throw new ApiError(status, body.message ?? 'Request failed', body.errors)
+    if (body && typeof body.message === 'string') {
+      const fieldErrors = body.errors && typeof body.errors === 'object' ? (body.errors as Record<string, string>) : undefined
+      throw new ApiError(status, body.message, fieldErrors)
+    }
+
+    // The report module uses its own bespoke {error: "..."} shape (verified
+    // against ReportExceptionHandler) — the only module in the app that
+    // doesn't use either the shared ApiResponse envelope or a plain-text 405.
+    if (body && typeof body.error === 'string') {
+      throw new ApiError(status, body.error)
     }
 
     if (status === 0) {

@@ -5,16 +5,18 @@ interface NumberStepperProps {
   value: number
   onChange: (value: number) => void
   min?: number
+  max?: number
   error?: string
 }
 
 export const NumberStepper = forwardRef<HTMLInputElement, NumberStepperProps>(
-  ({ label, value, onChange, min = 0, error }, ref) => {
+  ({ label, value, onChange, min = 0, max, error }, ref) => {
     const fieldId = useId()
     const errorId = `${fieldId}-error`
 
     function clamp(next: number) {
-      onChange(Number.isFinite(next) ? Math.max(min, next) : min)
+      const bounded = Number.isFinite(next) ? Math.max(min, next) : min
+      onChange(max !== undefined ? Math.min(max, bounded) : bounded)
     }
 
     return (
@@ -37,6 +39,7 @@ export const NumberStepper = forwardRef<HTMLInputElement, NumberStepperProps>(
             type="number"
             inputMode="numeric"
             min={min}
+            max={max}
             value={value}
             aria-invalid={!!error}
             aria-describedby={error ? errorId : undefined}

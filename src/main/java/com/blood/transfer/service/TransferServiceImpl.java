@@ -155,27 +155,28 @@ class TransferServiceImpl implements TransferService {
         BloodTransferRequest transfer = transferRepository.findByIdAndRequestingHospitalId(transferId, destHospitalId)
                 .orElseThrow(() -> new TransferNotFoundException(transferId));
 
-        transfer.transitionTo(TransferStatus.COMPLETED);
-        transfer.setCompletionDate(LocalDateTime.now(clock));
-        transfer.setUnitsReceived(req.unitsReceived());
-
         int received = req.unitsReceived();
         int approved = transfer.getQuantity();
 
-        if (received > 0) {
-            // Check if expiry has passed during transit
-            inventoryPort.finalizeTransfer(
-                    transfer.getSourceInventoryId(), approved,
-                    destHospitalId, auth.getName());
+        if (received > approved) {
+            throw new IllegalArgumentException(
+                    "Units received cannot exceed the approved amount (" + approved + ")");
+        }
 
-            if (received < approved) {
-                log.warn("Partial receipt: transferId={} approved={} received={} — discrepancy of {} units logged",
-                        transferId, approved, received, (approved - received));
-            }
-        } else {
-            // All expired in transit — just release the reservation without adding to dest
-            inventoryPort.release(transfer.getSourceInventoryId(), approved, auth.getName() + " [expired-in-transit]");
-            log.warn("All units expired in transit for transferId={}", transferId);
+        transfer.transitionTo(TransferStatus.COMPLETED);
+        transfer.setCompletionDate(LocalDateTime.now(clock));
+        transfer.setUnitsReceived(received);
+
+        // The full approved amount always leaves the source; only what's
+        // actually received is credited to the destination — any shortfall
+        // (breakage, expiry in transit) is a real loss, not silently moved.
+        inventoryPort.finalizeTransfer(
+                transfer.getSourceInventoryId(), approved, received,
+                destHospitalId, auth.getName());
+
+        if (received < approved) {
+            log.warn("Partial receipt: transferId={} approved={} received={} — {} units lost/expired in transit",
+                    transferId, approved, received, (approved - received));
         }
 
         BloodTransferRequest saved = transferRepository.save(transfer);

@@ -22,6 +22,12 @@ const STATUS_MAP: Record<string, { label: string; tone: BadgeTone; icon?: string
   EXPIRING_SOON: { label: 'Expiring', tone: 'warning', icon: '⚠' },
   EXPIRED: { label: 'Expired', tone: 'danger', icon: '⛔' },
   NO_STOCK: { label: 'No stock', tone: 'neutral', icon: '—' },
+  PENDING: { label: 'Pending', tone: 'warning', icon: '⏳' },
+  APPROVED: { label: 'Approved', tone: 'success', icon: '✓' },
+  REJECTED: { label: 'Rejected', tone: 'danger', icon: '⛔' },
+  CANCELLED: { label: 'Cancelled', tone: 'neutral', icon: '—' },
+  COMPLETED: { label: 'Completed', tone: 'success', icon: '✓' },
+  INSUFFICIENT_STOCK: { label: 'Insufficient stock', tone: 'danger' },
 }
 
 export function StatusBadge({ status }: { status: string }) {
