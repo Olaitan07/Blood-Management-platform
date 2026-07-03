@@ -8,8 +8,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-
 @Service
 @RequiredArgsConstructor
 class AuditServiceImpl implements AuditService {
@@ -19,7 +17,7 @@ class AuditServiceImpl implements AuditService {
     @Override
     @Transactional(readOnly = true)
     public Page<AuditRecordResponse> query(String eventType, String actor, String targetType,
-                                           Instant from, Instant to, int page, int size) {
+                                           String from, String to, int page, int size) {
         return auditRecordRepository
                 .filter(eventType, actor, targetType, from, to, PageRequest.of(page, size))
                 .map(AuditRecordResponse::from);

@@ -56,4 +56,11 @@ public class Notification {
 
     @Column(name = "last_attempt_at")
     private Instant lastAttemptAt;
+
+    // Field named "read", not "isRead" — Lombok would otherwise generate the
+    // awkward isIsRead()/setIsRead() pair for a boolean field literally named
+    // isRead. The DB column stays is_read for readability there.
+    @Column(name = "is_read", nullable = false)
+    @Builder.Default
+    private boolean read = false;
 }

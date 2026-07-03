@@ -1,16 +1,17 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { searchBlood } from '@/api/search'
 import { BloodGroupChips } from '@/components/BloodGroupChips'
 import { Pagination } from '@/components/Pagination'
+import { CreateTransferModal } from './CreateTransferModal'
+import { formatRelativeTime } from '@/lib/dateFormat'
 import type { BloodGroup, BloodSearchResult } from '@/api/types'
 
 export function SearchPage() {
-  const navigate = useNavigate()
   const [bloodGroup, setBloodGroup] = useState<BloodGroup | null>(null)
   const [page, setPage] = useState(1) // 1-based for display; converted to 0-based for the API
   const [pageSize, setPageSize] = useState(10)
+  const [requestTarget, setRequestTarget] = useState<BloodSearchResult | null>(null)
 
   const searchQuery = useQuery({
     queryKey: ['search', 'blood', bloodGroup, page, pageSize],
@@ -64,19 +65,7 @@ export function SearchPage() {
             </p>
             <ul className="flex flex-col gap-3">
               {searchQuery.data.results.map((result) => (
-                <ResultCard
-                  key={result.hospitalId}
-                  result={result}
-                  onRequest={() =>
-                    navigate('/transfers/new', {
-                      state: {
-                        hospitalId: result.hospitalId,
-                        hospitalName: result.hospitalName,
-                        bloodGroup: result.bloodGroup,
-                      },
-                    })
-                  }
-                />
+                <ResultCard key={result.hospitalId} result={result} onRequest={() => setRequestTarget(result)} />
               ))}
             </ul>
             <Pagination
@@ -92,6 +81,8 @@ export function SearchPage() {
           </>
         )}
       </div>
+
+      <CreateTransferModal target={requestTarget} onClose={() => setRequestTarget(null)} />
     </div>
   )
 }
@@ -167,15 +158,4 @@ function ResultsSkeleton() {
       ))}
     </div>
   )
-}
-
-function formatRelativeTime(isoDateTime: string): string {
-  const diffMs = Date.now() - new Date(isoDateTime).getTime()
-  const minutes = Math.round(diffMs / 60000)
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes} min ago`
-  const hours = Math.round(minutes / 60)
-  if (hours < 24) return `${hours} hr${hours === 1 ? '' : 's'} ago`
-  const days = Math.round(hours / 24)
-  return `${days} day${days === 1 ? '' : 's'} ago`
 }

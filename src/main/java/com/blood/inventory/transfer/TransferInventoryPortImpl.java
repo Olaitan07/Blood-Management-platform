@@ -86,32 +86,44 @@ class TransferInventoryPortImpl implements TransferInventoryPort {
 
     @Override
     @Transactional
-    public Long finalizeTransfer(Long sourceInventoryId, int units,
+    public Long finalizeTransfer(Long sourceInventoryId, int approvedUnits, int receivedUnits,
                                  Long destHospitalId, String actor) {
         BloodInventory source = inventoryRepository.findById(sourceInventoryId)
                 .orElseThrow(() -> new IllegalStateException("Source inventory not found: " + sourceInventoryId));
 
         LocalDate expiryDate = source.getExpiryDate();
         String bloodGroup = source.getBloodGroup().getValue();
+        int shortfall = approvedUnits - receivedUnits;
 
-        // Deduct from source: reduce both available and reserved
-        source.setUnitsAvailable(source.getUnitsAvailable() - units);
-        source.setUnitsReserved(Math.max(0, source.getUnitsReserved() - units));
+        // The full approved amount always leaves the source — that's what was
+        // physically shipped, regardless of what arrives intact.
+        source.setUnitsAvailable(source.getUnitsAvailable() - approvedUnits);
+        source.setUnitsReserved(Math.max(0, source.getUnitsReserved() - approvedUnits));
         source.setLastUpdated(LocalDateTime.now(clock));
         inventoryRepository.save(source);
 
+        String dispatchReason = shortfall > 0
+                ? "Transfer dispatched: " + approvedUnits + " units sent to hospitalId=" + destHospitalId +
+                  " (" + shortfall + " lost/expired in transit, not credited on arrival)"
+                : "Transfer dispatched: " + approvedUnits + " units sent to hospitalId=" + destHospitalId;
         auditLogRepository.save(InventoryAuditLog.builder()
                 .inventoryId(sourceInventoryId)
                 .hospitalId(source.getHospitalId())
                 .bloodGroup(bloodGroup)
-                .oldUnits(source.getUnitsAvailable() + units)
+                .oldUnits(source.getUnitsAvailable() + approvedUnits)
                 .newUnits(source.getUnitsAvailable())
-                .reason("Transfer dispatched: " + units + " units sent to hospitalId=" + destHospitalId)
+                .reason(dispatchReason)
                 .changedBy(actor)
                 .changedAt(LocalDateTime.now(clock))
                 .build());
 
-        // Add to destination: find existing record for same group+expiry or create new
+        if (receivedUnits <= 0) {
+            log.info("Transfer finalised: {}x{} shipped from hospitalId={}, 0 credited to hospitalId={} (total loss in transit)",
+                    approvedUnits, bloodGroup, source.getHospitalId(), destHospitalId);
+            return null;
+        }
+
+        // Only what was actually confirmed received is credited to the destination.
         BloodInventory dest = inventoryRepository
                 .findAvailableByHospital(destHospitalId, LocalDate.now(clock))
                 .stream()
@@ -124,30 +136,35 @@ class TransferInventoryPortImpl implements TransferInventoryPort {
             dest = BloodInventory.builder()
                     .hospitalId(destHospitalId)
                     .bloodGroup(source.getBloodGroup())
-                    .unitsAvailable(units)
+                    .unitsAvailable(receivedUnits)
                     .unitsReserved(0)
                     .expiryDate(expiryDate)
                     .lastUpdated(LocalDateTime.now(clock))
                     .build();
         } else {
-            dest.setUnitsAvailable(dest.getUnitsAvailable() + units);
+            dest.setUnitsAvailable(dest.getUnitsAvailable() + receivedUnits);
             dest.setLastUpdated(LocalDateTime.now(clock));
         }
 
         BloodInventory savedDest = inventoryRepository.save(dest);
 
+        String receivedReason = shortfall > 0
+                ? "Transfer received: " + receivedUnits + " of " + approvedUnits + " units from hospitalId=" +
+                  source.getHospitalId() + " (" + shortfall + " lost/expired in transit)"
+                : "Transfer received: " + receivedUnits + " units from hospitalId=" + source.getHospitalId();
         auditLogRepository.save(InventoryAuditLog.builder()
                 .inventoryId(savedDest.getId())
                 .hospitalId(destHospitalId)
                 .bloodGroup(bloodGroup)
-                .oldUnits(savedDest.getUnitsAvailable() - units)
+                .oldUnits(savedDest.getUnitsAvailable() - receivedUnits)
                 .newUnits(savedDest.getUnitsAvailable())
-                .reason("Transfer received: " + units + " units from hospitalId=" + source.getHospitalId())
+                .reason(receivedReason)
                 .changedBy(actor)
                 .changedAt(LocalDateTime.now(clock))
                 .build());
 
-        log.info("Transfer finalised: {}x{} from hospitalId={} to hospitalId={}", units, bloodGroup, source.getHospitalId(), destHospitalId);
+        log.info("Transfer finalised: {}x{} shipped from hospitalId={}, {} credited to hospitalId={}",
+                approvedUnits, bloodGroup, source.getHospitalId(), receivedUnits, destHospitalId);
         return savedDest.getId();
     }
 }

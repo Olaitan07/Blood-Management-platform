@@ -1,13 +1,29 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
+import { NotificationBell } from '@/components/NotificationBell'
+import type { Role } from '@/api/types'
 
-const ADMIN_NAV_LINKS = [
-  { to: '/admin/users', label: 'Users' },
-  { to: '/admin/hospitals', label: 'Hospitals' },
-]
+const NAV_LINKS_BY_ROLE: Partial<Record<Role, { to: string; label: string }[]>> = {
+  ADMIN: [
+    { to: '/admin/users', label: 'Users' },
+    { to: '/admin/hospitals', label: 'Hospitals' },
+    { to: '/admin/audit', label: 'Audit log' },
+    { to: '/admin/reports', label: 'Reports' },
+  ],
+  OFFICER: [
+    { to: '/inventory', label: 'Inventory' },
+    { to: '/transfers/pending', label: 'Pending requests' },
+    { to: '/transfers/incoming', label: 'Incoming transfers' },
+  ],
+  CLINICIAN: [
+    { to: '/search', label: 'Search' },
+    { to: '/transfers/my-requests', label: 'Requests' },
+  ],
+}
 
 export function AppShell() {
   const { user, logout } = useAuth()
+  const navLinks = user ? (NAV_LINKS_BY_ROLE[user.role] ?? []) : []
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -18,9 +34,9 @@ export function AppShell() {
               <span className="h-6 w-6 rounded-md bg-gradient-to-br from-brand-500 to-brand-700" />
               <span className="text-sm font-semibold tracking-wide text-gray-200">bloodlink</span>
             </div>
-            {user?.role === 'ADMIN' && (
+            {navLinks.length > 0 && (
               <nav className="flex items-center gap-4 text-sm">
-                {ADMIN_NAV_LINKS.map((link) => (
+                {navLinks.map((link) => (
                   <NavLink
                     key={link.to}
                     to={link.to}
@@ -36,6 +52,7 @@ export function AppShell() {
           </div>
           {user && (
             <div className="flex items-center gap-3 text-sm">
+              <NotificationBell />
               <span className="text-gray-400">
                 {user.name} <span className="text-gray-600">·</span> {titleCase(user.role)}
               </span>

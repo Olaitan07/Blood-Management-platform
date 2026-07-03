@@ -187,3 +187,137 @@ export interface BloodSearchResponse {
   // one, or several (e.g. AB+ accepts from all 8 groups).
   suggestions: BloodGroup[] | null
 }
+
+// INSUFFICIENT_STOCK exists in the backend's state machine but no code path
+// ever sets it today (the stock check happens at create time and rejects
+// before a row is even persisted) — included defensively, not expected live.
+export type TransferStatus =
+  | 'PENDING'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'COMPLETED'
+  | 'EXPIRED'
+  | 'INSUFFICIENT_STOCK'
+
+// No hospital names anywhere on this DTO — only IDs. Resolve names client-side
+// via the hospital list. Also no requestedByUserId — GET .../my-requests is
+// genuinely hospital-scoped, not personal, so there's no way to filter this
+// down to "requests I personally made" without a backend change.
+export interface TransferResponse {
+  id: number
+  requestingHospitalId: number
+  sourceHospitalId: number
+  bloodGroup: BloodGroup
+  quantity: number
+  status: TransferStatus
+  requestDate: string
+  approvalDate?: string
+  completionDate?: string
+  rejectionReason?: string
+  unitsReceived?: number
+  idempotencyKey: string
+}
+
+export interface CreateTransferRequest {
+  sourceHospitalId: number
+  bloodGroup: BloodGroup
+  quantity: number
+  idempotencyKey: string
+}
+
+export interface RejectTransferRequest {
+  reason: string
+}
+
+// DONOR notifications only ever have donorId set (a welcome message to that
+// donor); TRANSFER notifications only ever have hospitalId set. "status" here
+// is the SMS/email dispatch status (PENDING/SENT/FAILED/DEAD_LETTER) — it has
+// nothing to do with read/unread, which is the separate `read` field.
+export type NotificationType = 'DONOR' | 'TRANSFER'
+
+export interface NotificationResponse {
+  id: number
+  recipient: string
+  message: string
+  status: string
+  sentAt: string
+  type: NotificationType
+  donorId: number | null
+  transferId: number | null
+  read: boolean
+}
+
+export interface CompleteTransferRequest {
+  unitsReceived: number
+}
+
+// Exhaustive — verified against every @ApplicationModuleListener in
+// AuditEventListener. Inventory events are never audited (no dependency on
+// inventory::events exists in the audit module at all), so there is no
+// "Inventory" value and never will be under the current architecture.
+export type AuditEventType =
+  | 'BloodTransferRequestedEvent'
+  | 'BloodTransferApprovedEvent'
+  | 'BloodTransferRejectedEvent'
+  | 'BloodTransferCompletedEvent'
+  | 'BloodTransferCancelledEvent'
+  | 'DonorRegisteredEvent'
+  | 'HospitalRegisteredEvent'
+  | 'HospitalDeactivatedEvent'
+  | 'UserRegisteredEvent'
+  | 'AdminAuditEvent'
+
+export type AuditTargetType = 'TRANSFER' | 'DONOR' | 'HOSPITAL' | 'USER'
+
+export interface AuditRecordResponse {
+  id: number
+  eventType: AuditEventType
+  actor: string
+  targetId: string
+  targetType: AuditTargetType
+  payload: string
+  occurredAt: string
+  receivedAt: string
+}
+
+export type ReportType = 'STOCK_LEVELS' | 'TRANSFERS' | 'DONORS' | 'EXPIRY_WASTE'
+
+// One generic envelope for all 4 report types — there are no per-type DTOs.
+// `rows` shape varies by type (verified against source):
+//   STOCK_LEVELS / EXPIRY_WASTE -> structured objects (hospitalId, bloodGroup, ...)
+//   TRANSFERS / DONORS          -> generic {metric, value} pairs, flattened
+// `note` is non-null when the range had no matching data — render it, don't
+// treat a low/zero totalRows as an error.
+export interface ReportResult {
+  type: ReportType
+  from: string
+  to: string
+  totalRows: number
+  rows: Record<string, string | number>[]
+  note: string | null
+}
+
+export interface StockLevelRow {
+  hospitalId: number
+  hospitalName: string
+  bloodGroup: BloodGroup
+  unitsAvailable: number
+  unitsReserved: number
+  netAvailable: number
+}
+
+export interface ExpiryWasteRow {
+  hospitalId: number
+  hospitalName: string
+  bloodGroup: BloodGroup
+  wastedUnits: number
+  expiryDate: string
+}
+
+// TRANSFERS/DONORS rows are {metric: string, value: number} — no fixed field
+// set to type beyond that.
+export interface MetricRow {
+  metric: string
+  value: number
+}

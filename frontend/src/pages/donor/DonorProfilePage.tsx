@@ -8,6 +8,7 @@ import { Button } from '@/components/Button'
 import { TextField } from '@/components/TextField'
 import { Select } from '@/components/Select'
 import { useToast } from '@/components/Toast'
+import { formatDate } from '@/lib/dateFormat'
 import { BLOOD_GROUPS, type BloodGroup, type DonorRequest, type DonorResponse } from '@/api/types'
 
 export function DonorProfilePage() {
@@ -80,7 +81,7 @@ function ProfileView({ donor }: { donor: DonorResponse }) {
               ? isFirstTime
                 ? "You're eligible to donate."
                 : 'You can donate now.'
-              : `You can donate again starting ${formatDate(donor.eligibleFrom)}.`}
+              : `You can donate again starting ${donor.eligibleFrom ? formatDate(donor.eligibleFrom, 'long') : ''}.`}
           </p>
         </div>
 
@@ -111,15 +112,6 @@ function Row({ label, value }: { label: string; value: string }) {
       <dd className="font-medium text-gray-100">{value}</dd>
     </div>
   )
-}
-
-function formatDate(isoDate: string | null): string {
-  if (!isoDate) return ''
-  return new Date(`${isoDate}T00:00:00`).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
 }
 
 interface FieldErrors {
