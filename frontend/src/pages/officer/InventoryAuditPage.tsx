@@ -5,6 +5,7 @@ import { getInventoryAuditLog } from '@/api/inventory'
 import { getHospitalById } from '@/api/hospitals'
 import { useAuth } from '@/auth/AuthContext'
 import { Pagination } from '@/components/Pagination'
+import { formatDateTime } from '@/lib/dateFormat'
 import type { AuditLogResponse } from '@/api/types'
 
 export function InventoryAuditPage() {
@@ -115,14 +116,4 @@ function TimelineSkeleton() {
       ))}
     </div>
   )
-}
-
-function formatDateTime(isoDateTime: string): string {
-  return new Date(isoDateTime).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
 }

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getDonationHistory, getMyDonorProfile } from '@/api/donors'
 import { ApiError } from '@/api/client'
 import { Pagination } from '@/components/Pagination'
+import { formatDate } from '@/lib/dateFormat'
 import type { DonationResponse } from '@/api/types'
 
 export function DonationHistoryPage() {
@@ -132,12 +133,4 @@ function HistorySkeleton() {
       ))}
     </div>
   )
-}
-
-function formatDate(isoDate: string): string {
-  return new Date(`${isoDate}T00:00:00`).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
 }

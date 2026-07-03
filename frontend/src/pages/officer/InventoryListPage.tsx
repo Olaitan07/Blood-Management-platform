@@ -12,6 +12,7 @@ import { Pagination } from '@/components/Pagination'
 import { Button } from '@/components/Button'
 import { AddInventoryDrawer } from './AddInventoryDrawer'
 import { CorrectStockDrawer } from './CorrectStockDrawer'
+import { formatDate } from '@/lib/dateFormat'
 import { BLOOD_GROUPS, type BloodGroup, type InventoryResponse } from '@/api/types'
 
 type Tab = 'ALL' | 'EXPIRING_SOON' | 'EXPIRED'
@@ -219,12 +220,4 @@ function TabButton({
       {children}
     </button>
   )
-}
-
-function formatDate(isoDate: string): string {
-  return new Date(`${isoDate}T00:00:00`).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
 }
