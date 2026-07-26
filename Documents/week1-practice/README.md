@@ -1,1 +1,0 @@
-capstone project for week 2 cloud and devop class
